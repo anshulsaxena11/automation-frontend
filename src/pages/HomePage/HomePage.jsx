@@ -1,52 +1,62 @@
 import React, { useState, useEffect } from "react";
 import { IoMdAdd } from "react-icons/io";
 import Form from "react-bootstrap/Form";
-import { useNavigate } from "react-router-dom";
-import Button from "react-bootstrap/Button";
+import { yupResolver } from "@hookform/resolvers/yup";
+import validationSchema from '../../validation/validationSchema'
+import { Button, Spinner } from 'react-bootstrap'; 
 import "bootstrap/dist/css/bootstrap.min.css";
 import DatePicker from "react-datepicker";
 import { MultiSelect } from "react-multi-select-component";
 import { postPerseonlData } from '../../api/ProjectDetailsAPI/projectDetailsApi'
+import { postdirectrate, getdirectrate } from '../../api/directrateAPI/directrate'
 import {postProjectTypeList, getProjectTypeList} from '../../api/projectTypeListApi/projectTypeListApi'
 import "react-datepicker/dist/react-datepicker.css";
 import "./homePage.css";
+import { useForm, Controller } from "react-hook-form";
+import PreviewModal from '../../components/previewfile/preview';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Popup from '../../components/popupBox/PopupBox'
 import FormComponent from '../../components/formComponent/formcomponent'
+import { PiImagesSquareBold } from "react-icons/pi";
+import { FcDocument } from "react-icons/fc";
+
 
 const HomePage = () => {
-  const [OrganisationName, setOrganisationName] = useState()
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null); 
-  const [ProjectName, setProjectName] = useState("");
-  const [PrimaryFullName, setPrimaryFullName] = useState("")
-  const [SecondaryFullName, setSecondaryFullName] = useState("")
-  const [PrimaryPhoneNo, setPrimaryPhoneNo] = useState("")
-  const [SecondaryPhoneNo, setSecondaryPhoneNo] = useState("")
-  const [SecondaryEmail, setSecondaryEmail] = useState('')
-  const [PrimaryEmail, setPrimaryEmail] = useState('');
-  const [DirectrateName, setDirectrateName] = useState('')
-  const [ServiceLoction, setServiceLoction] = useState('')
+  const { control, handleSubmit, formState: { errors }, setValue,reset } = useForm({
+    resolver: yupResolver(validationSchema),
+    defaultValues: {
+      selectedProjectTypes: [],
+      startDate: null,
+      endDate: null,
+    },
+  });
+
   const [preview, setPreview] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [projectTypeName, setProjectTypeName] = useState(''); 
-  const [projectTypes, setProjectTypes] = useState([]); 
-  const [ProjectValue, setProjectValue] =useState("");
-  const [selectedProjectTypes, setSelectedProjectTypes] = useState([]); 
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showDirectrateModal, setShowDirectrateModal] = useState(false);
+  const [projectTypeName, setProjectTypeName] = useState([]); 
+  const [error, setError] = useState(null);
+  const [directrateName, setDirectrateName] = useState('');
+  const [projectTypes, setProjectTypes] = useState([]);
+  const [loading, setLoading] = useState(false); 
+  const [fileType, setFileType] = useState(''); 
+  const [directrateList, setDirectrateList] = useState(''); 
 
+  
   useEffect(() => {
-
+    
     const fetchProjectTypeList = async () => {
       try {
         const response = await getProjectTypeList(); 
-        console.log('data',response)
-
+        
         if (response && Array.isArray(response.data)) {
           const options = response.data.map((projectTypes) => ({
             label: projectTypes.ProjectTypeName, 
             value: projectTypes._id 
           }));
-          
           setProjectTypes(options); 
         } else {
           console.error("Expected an array in response.data but got:", response);
@@ -55,50 +65,107 @@ const HomePage = () => {
         console.error("Error fetching device list:", error);
       }
     };
-  
+    
     fetchProjectTypeList();
   }, []);
+  
+  useEffect(() => {
+     const fetchdirectrateList = async () => {
+       setLoading(true);
+       setError("");
+   
+       try {
+        const response = await getdirectrate();
+        console.log('response', response)
+        if (response && response.data && response.data.data && Array.isArray(response.data.data)) {
+          setDirectrateList(response.data.data);  
+        } else {
+          throw new Error("Unexpected data format or empty directrate list");
+        }
+      } catch (err) {
+        setError(`Failed to fetch directrate list: ${err.message}`);
+        console.error("Error fetching directrate list:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+   
+     fetchdirectrateList();
+   }, [])
 
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!startDate || !endDate) {
-      alert("Both Start Date and End Date are required!");
-      return;
-    }
-    const selectedTypes = selectedProjectTypes.map((type) => type.value);
+  const handleFormdataSubmit = async (data) => {
     const payload = {
-      orginisationName: OrganisationName,
-      projectName:ProjectName,
-      startDate:startDate,
-      endDate:endDate,
-      projectValue:ProjectValue,
-      primaryPersonName:PrimaryFullName,
-      secondaryPersonName:SecondaryFullName,
-      primaryPersonPhoneNo:PrimaryPhoneNo,
-      secondaryPrsonPhoneNo:SecondaryPhoneNo,
-      secondaryPersonEmail:SecondaryEmail,
-      primaryPersonEmail:PrimaryEmail,
-      directrate:DirectrateName,
-      serviceLocation:ServiceLoction,
-      projectType:selectedTypes,
-      workOrder:uploadedFile,
+      workOrderNo:data.workOrderNo,
+      orderType:data.orderType,
+      type:data.type,
+      orginisationName: data.OrganisationName,
+      projectName: data.ProjectName,
+      startDate: data.startDate, 
+      endDate: data.endDate,
+      projectValue: data.ProjectValue,
+      primaryPersonName: data.PrimaryFullName,
+      secondaryPersonName: data.SecondaryFullName,
+      primaryPersonPhoneNo: data.PrimaryPhoneNo,
+      secondaryPrsonPhoneNo: data.SecondaryPhoneNo,
+      secondaryPersonEmail: data.SecondaryEmail,
+      primaryPersonEmail: data.PrimaryEmail,
+      directrate: data.DirectrateName,
+      serviceLocation: data.ServiceLoction,
+      noOfauditor:data.noOfauditor,
+      projectManager:data.projectManager,
+      projectType: data.selectedProjectTypes.map(type => type.value),
+      workOrder: uploadedFile,
+    };
+    setLoading(true);
+    try{
+      await postPerseonlData(payload);
+      reset();
+      toast.success('Form submitted successfully!', {
+        className: 'custom-toast custom-toast-success',
+      });
+
+    }catch(error){
+      toast.error('Failed to submit the form.', {
+        className: 'custom-toast custom-toast-error',
+      });
     }
-    console.log('data',payload)
-    const response = await postPerseonlData(payload);
+    setLoading(false);
+  };
+
+  const handleButtonClick = (e) => {
+    e.preventDefault();
+      handleSubmit(handleFormdataSubmit)();
   };
 
   const handelProjectListFormSubmit = async() =>{
     const payload = {
       ProjectTypeName:projectTypeName 
     }
-    const response = await postProjectTypeList(payload);
+    await postProjectTypeList(payload);
   }
 
-  const handleFormSubmit = (formData) => {
-    console.log('Form Submitted:', formData);
-    handleClose(); 
+  const handleDirectrateFormSubmit = async()=>{
+    const payload ={
+      directrate:directrateName,
+    }
+    await postdirectrate(payload);
+  }
+
+  const handleInputChange = (e) => {
+    setProjectTypeName(e.target.value);
   };
+
+  const handleDirectrateInputChange = (e) => {
+    setDirectrateName(e.target.value);
+  }
+
+  const handledirectrateshow = () =>{
+    setShowDirectrateModal(true);
+  }
+
+  const handledirectrateClose = () =>{
+    setShowDirectrateModal(false)
+  }
 
   const handleShow = () => {
     setShowModal(true); 
@@ -112,76 +179,63 @@ const HomePage = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     setUploadedFile(file);
-
+  
     if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setPreview(reader.result); 
-      };
-      reader.readAsDataURL(file);
+      setFileType(file.type); 
+  
+      if (file.type === 'application/pdf') {
+        const fileURL = URL.createObjectURL(file);
+        setPreview(fileURL);
+      } else if (file.type.startsWith('image/')) {
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          setPreview(reader.result); 
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
-  const handleOrganisationChange = (e) =>{
-    setOrganisationName(e.target.value)
-  }
-  const handleEmailChange = (e) => {
-    setPrimaryEmail(e.target.value); 
+  const handlePreviewClick = () => {
+    setShowPreviewModal(true);
   };
 
-  const handleSecondaryEmail = (e) => {
-    setSecondaryEmail(e.target.value)
+  const handleCloseModal = () => {
+    setShowPreviewModal(false); 
   };
-  const handleServiceLocation = (e) =>{
-    setServiceLoction(e.target.value)
-  };
-  const handleStartDate = (date) =>{
-    setStartDate(date)
-  }
-  const handleEndDate = (date) =>{
-    setEndDate(date);
-  };
-  const handleProjectValue = (e) => {
-    const value = e.target.value;
-    if (/^\d*$/.test(value)) {
-      setProjectValue(value);
-    }
-  };
-  const handleProjectName = (e) =>{
-    setProjectName(e.target.value)
-  }
-  const handleDirectrateName = (e) =>{
-    setDirectrateName(e.target.value)
-  }
-  const handlePrimaryFullName = (e) =>{
-    setPrimaryFullName(e.target.value)
-  }
-  const handleSecondaryFullName = (e) =>{
-    setSecondaryFullName(e.target.value)
-  }
-  const handlePrimaryPhoneNo = (e) =>{
-    const value = e.target.value;
-    if (/^\d*$/.test(value)) {
-      setPrimaryPhoneNo(value);
-    }
-  }
-  const handleSecondaryPhoneNo = (e) =>{
-    const value = e.target.value;
-    if (/^\d*$/.test(value)) {
-      setSecondaryPhoneNo(value);
-    }
-  }
 
   return (
     <div className="home-page">
+        <ToastContainer  position="top-center" autoClose={5000} hideProgressBar={false} />
+        <Popup
+        show={showDirectrateModal}
+        handleClose={handledirectrateClose}
+        title="ADD Directrate Name"   
+        showFooter={true}      
+        footerText="Close" 
+        handleAdd={handleDirectrateFormSubmit}   
+      >     
+      <FormComponent
+        label="Add Directrate Name" 
+        placeholder="Enter Directrate Name"
+        value={directrateName} 
+        onChange={handleDirectrateInputChange}
+      />
+      </Popup>
       <Popup
         show={showModal}
         handleClose={handleClose}
-        title="ADD Project Type"   
+        title="ADD Scope Of Work Type"   
         showFooter={true}      
         footerText="Close" 
         handleAdd={handelProjectListFormSubmit}   
       >     
-       <FormComponent  setProjectTypeName={setProjectTypeName} />
+       <FormComponent  
+        label="Add Scope Of Work" 
+        placeholder="Enter Scope of work"
+        value={projectTypeName} 
+        onChange={handleInputChange} 
+      />
       </Popup>
       <h1>Project Details</h1>
       <hr />
@@ -189,81 +243,193 @@ const HomePage = () => {
         <div className="row">
           <Form onSubmit={handleSubmit}>
             <div className="row">
-              <div className="col-sm-6 col-md-6 col-lg-6">
-                <Form.Group className="mb-3" controlId="FormOrganisation">
-                  <Form.Label className="fs-5 fw-bolder">Organisation Name</Form.Label>
-                  <Form.Control 
-                    type="text" 
-                    placeholder="Enter Organisation Name"
-                    value={OrganisationName}
-                    onChange={handleOrganisationChange}
+              <div className="col-sm-4 col-lg-4 col-md-4">
+              <Form.Group className="mb-3">
+                  <Form.Label className="fs-5 fw-bolder">Work Order Number<span className="text-danger">*</span></Form.Label>
+                  <Controller
+                    name="workOrderNo"
+                    control={control}
+                    render={({ field }) => <input {...field} className="form-control"  placeholder="Enter Work Order Number"/>}
                   />
+                  {errors.workOrderNo && <p className="text-danger">{errors.workOrderNo.message}</p>}
+                </Form.Group>
+              </div>
+              <div className="col-sm-4 col-lg-4 col-md-4">
+                <Form.Group className="mb-3">
+                    <Form.Label className="fs-5 fw-bolder">Order Type<span className="text-danger">*</span> </Form.Label>
+                    <Controller
+                      name="orderType"
+                      control={control}
+                      render={({ field }) => (
+                        <div className="row">
+                          <div className="col-sm-3 col-lg-3 col-md-3">
+                            <div className="form-check">
+                              <input
+                                {...field}
+                                type="radio"
+                                id="1"
+                                value="GeM"
+                                className="form-check-input"
+                              />
+                              <label htmlFor="11" className="form-check-label">GeM</label>
+                            </div>
+                          </div>
+                          <div className="col-sm-6 col-lg-6 col-md-6">
+                            <div className="form-check">
+                          <input
+                            {...field}
+                            type="radio"
+                            id="2"
+                            value="Nomination"
+                            className="form-check-input"
+                          />
+                          <label htmlFor="2" className="form-check-label">Nomination</label>
+                        </div>
+                      </div>
+                    </div>                      
+                      )}
+                    />
+                    {errors.orderType && <p className="text-danger">{errors.orderType.message}</p>}
+                  </Form.Group>
+              </div>
+              <div className="col-sm-4 col-lg-4 col-md-4">
+                <Form.Group className="mb-3">
+                  <Form.Label className="fs-5 fw-bolder"> Type<span className="text-danger">*</span> </Form.Label>
+                  <Controller
+                    name="type"
+                    control={control}
+                    render={({ field }) => (
+                      <div className="row">
+                        <div className="col-sm-3 col-lg-3 col-md-3">
+                          <div className="form-check">
+                            <input
+                              {...field}
+                              type="radio"
+                              id="1"
+                              value="PSU"
+                              className="form-check-input"
+                            />
+                            <label htmlFor="1" className="form-check-label">PSU</label>
+                          </div>
+                        </div>
+                        <div className="col-sm-3 col-lg-3 col-md-3">
+                          <div className="form-check">
+                            <input
+                              {...field}
+                              type="radio"
+                              id="2"
+                              value="Govt"
+                              className="form-check-input"
+                            />
+                            <label htmlFor="2" className="form-check-label">Govt</label>
+                          </div>
+                        </div>
+                        <div className="col-sm-3 col-md-3 col-lg-3">
+                        <div className="form-check">
+                            <input
+                              {...field}
+                              type="radio"
+                              id="3"
+                              value="Private"
+                              className="form-check-input"
+                            />
+                            <label htmlFor="3" className="form-check-label">Private</label>
+                          </div>
+                        </div>
+                      </div>                      
+                    )}
+                  />
+                  {errors.type && <p className="text-danger">{errors.type.message}</p>}
+                </Form.Group>
+              </div>
+            </div>
+            <div className="row">
+              <div className="col-sm-6 col-md-6 col-lg-6">
+                <Form.Group className="mb-3">
+                  <Form.Label className="fs-5 fw-bolder">Organisation Name<span className="text-danger">*</span></Form.Label>
+                  <Controller
+                    name="OrganisationName"
+                    control={control}
+                    render={({ field }) => <input {...field} className="form-control" placeholder="Enter Organisation Name"/>}
+                  />
+                  {errors.OrganisationName && <p className="text-danger">{errors.OrganisationName.message}</p>}
                 </Form.Group>
                 <div className="row">
                   <div className="col-sm-6 col-md-6 col-lg-6">
                     <Form.Group className="mb-3" controlId="StartDate">
-                      <Form.Label className="fs-5 fw-bolder">Start Date</Form.Label>
-                      <DatePicker
-                        selected={startDate}
-                        onChange={handleStartDate}
-                        className="form-control"
-                        dateFormat="MMMM d, yyyy"
-                        placeholderText="Select Start Date"
+                      <Form.Label className="fs-5 fw-bolder">Start Date<span className="text-danger">*</span></Form.Label>
+                      <Controller
+                        name="startDate"
+                        control={control}
+                        render={({ field }) => <DatePicker {...field} selected={field.value} onChange={(date) => field.onChange(date)} className="form-control" dateFormat="MMMM d, yyyy" placeholderText="Select Start Date" />}
                       />
+                      {errors.startDate && <p className="text-danger">{errors.startDate.message}</p>}
                     </Form.Group>
                   </div>
                   <div className="col-sm-6 col-md-6 col-lg-6">
                     <Form.Group className="mb-3" controlId="EndDate">
-                      <Form.Label className="fs-5 fw-bolder">End Date</Form.Label>
-                      <DatePicker
-                        selected={endDate}
-                        onChange={handleEndDate}
-                        className="form-control"
-                        dateFormat="MMMM d, yyyy"
-                        placeholderText="Select End Date"
+                      <Form.Label className="fs-5 fw-bolder">End Date<span className="text-danger">*</span></Form.Label>
+                      <Controller
+                        name="endDate"
+                        control={control}
+                        render={({ field }) => <DatePicker {...field} selected={field.value} onChange={(date) => field.onChange(date)} className="form-control" dateFormat="MMMM d, yyyy" placeholderText="Select End Date" />}
                       />
+                      {errors.endDate && <p className="text-danger">{errors.endDate.message}</p>}
                     </Form.Group>
                   </div>
                 </div>
                 <Form.Group className="mb-3" controlId="ProjectValue">
-                  <Form.Label className="fs-5 fw-bolder">Project value</Form.Label>
-                  <Form.Control 
-                    type="text" 
-                    placeholder="Enter project value"
-                    value={ProjectValue} 
-                    onChange={handleProjectValue}
+                  <Form.Label className="fs-5 fw-bolder">Project value in Numeric<span className="text-danger">*</span></Form.Label>
+                  <Controller
+                    name="ProjectValue"
+                    control={control}
+                    render={({ field }) => <input {...field} className="form-control" placeholder="Enter Project Value in Number"/>}
                   />
+                  {errors.ProjectValue && <p className="text-danger">{errors.ProjectValue.message}</p>}
                 </Form.Group>
                 <Form.Group className="mb-3">
-                  <Form.Label className="fs-5 fw-bolder">Service Location</Form.Label>
-                  <Form.Control 
-                    type="text" 
-                    placeholder="Enter Service Location"
-                    value={ServiceLoction}
-                    onChange={handleServiceLocation}
+                  <Form.Label className="fs-5 fw-bolder">Service Location<span className="text-danger">*</span></Form.Label>
+                  <Controller
+                    name="ServiceLoction"
+                    control={control}
+                    render={({ field }) => <input {...field} className="form-control" placeholder="Enter Service Location"/>}
                   />
+                  {errors.ServiceLoction && <p className="text-danger">{errors.ServiceLoction.message}</p>}
                 </Form.Group>
               </div>
               <div className="col-sm-6 col-md-6 col-lg-6"> 
                 <Form.Group className="mb-3" controlId="PriojectName">
-                  <Form.Label className="fs-5 fw-bolder">Project Name</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Enter Project Name"
-                    value={ProjectName}
-                    onChange={handleProjectName} 
+                  <Form.Label className="fs-5 fw-bolder">Project Name<span className="text-danger">*</span></Form.Label>
+                  <Controller
+                    name="ProjectName"
+                    control={control}
+                    render={({ field }) => <input {...field} className="form-control" placeholder="Enter Project Name" />}
                   />
+                  {errors.ProjectName && <p className="text-danger">{errors.ProjectName.message}</p>}
                 </Form.Group>
                 <div className="row">
                   <div className="col-sm-10 col-md-10 col-lg-10">
                     <Form.Group className="mb-3" >
-                      <Form.Label className="fs-5 fw-bolder">Project Type</Form.Label>
-                      <MultiSelect
-                        options={projectTypes}
-                        value={selectedProjectTypes}
-                        onChange={setSelectedProjectTypes}
-                        labelledBy="Select"
+                      <Form.Label className="fs-5 fw-bolder">Scope Of Work<span className="text-danger">*</span></Form.Label>
+                      {projectTypes && Array.isArray(projectTypes) && projectTypes.length > 0 ? (
+                      <Controller
+                        name="selectedProjectTypes"
+                        control={control}
+                        render={({ field }) => (
+                          <MultiSelect
+                            options={projectTypes} 
+                            value={field.value} 
+                            onChange={(selected) => setValue('selectedProjectTypes', selected)} 
+                            labelledBy="Select"
+                          />
+                        )}
                       />
+                    ) : (
+                      <div>Loading project types...</div> 
+                    )}
+                    {errors.selectedProjectTypes && (
+                      <div className="text-danger">{errors.selectedProjectTypes.message}</div>
+                    )}
                     </Form.Group>
                   </div>
                   <div className="col-sm-2 col-md-2 col-lg-2">
@@ -271,96 +437,172 @@ const HomePage = () => {
                   </div>
                 </div>
                 <Form.Group className="mb-3" controlId="directrate">
-                  <Form.Label className="fs-5 fw-bolder">Directrate</Form.Label>
-                  <Form.Control
-                    type="text"
-                    placeholder="Enter Directrate Name"
-                    value={DirectrateName}
-                    onChange={handleDirectrateName} 
-                  />
+                  <div className="row">
+                    <div className='col-sm-10 col-md-10 col-lg-10'>
+                      <Form.Label className="fs-5 fw-bolder">Directrate<span className="text-danger">*</span></Form.Label>
+                      <Controller
+                        name="DirectrateName"
+                        control={control}
+                        render={({ field }) => (
+                          <Form.Select {...field} className="form-control" disabled={loading}>
+                            <option value="">Select Directrate</option>
+                            {directrateList.length > 0 ? (
+                              directrateList.map((directrate) => (
+                                <option key={directrate._id} value={directrate.directrate}>
+                                  {directrate.directrate}
+                                </option>
+                              ))
+                            ) : (
+                              <option disabled>No directrates available</option>
+                            )}
+                          </Form.Select>
+                        )}
+                      />
+                      {errors.DirectrateName && <p className="text-danger">{errors.DirectrateName.message}</p>}
+                    </div>
+                  <div className="col-sm-2 col-md-2 col-lg-2">
+                    <Button variant="success" className="button-middle" onClick={handledirectrateshow}><IoMdAdd className="fs-3" /></Button>
+                  </div>
+                  </div>
                 </Form.Group>
                 <Form.Group className="mt-3">
-                <Form.Label className="fs-5 fw-bolder">Work Order</Form.Label>
-                  <Form.Control type="file" onChange={handleFileChange} />
+                <Form.Label className="fs-5 fw-bolder">Work Order<span className="text-danger">*</span></Form.Label>
+                <Controller
+                  name="workOrder"
+                  control={control}
+                  render={({ field }) => (
+                    <Form.Control
+                      {...field}
+                      type="file"
+                      onChange={(e) => {
+                        handleFileChange(e);
+                        field.onChange(e); 
+                      }}
+                      required
+                      accept=".pdf,.jpeg,.jpg"
+                    />
+                  )}
+                />
+                {errors.workOrder && (
+                  <p className="text-danger">{errors.workOrder.message}</p>
+                )}
                 </Form.Group>
                 {preview && (
-                  <div className="mt-3">
-                    <h6>File Preview:</h6>
-                    <img
-                      src={preview}
-                      alt="File Preview"
-                      style={{ maxWidth: '200px', maxHeight: '200px' }}
-                    />
-                  </div>
+                  <div
+                  onClick={handlePreviewClick}
+                  style={{ cursor: 'pointer', marginTop: '10px' }}
+                >
+                 <h6>
+                  {uploadedFile
+                    ? fileType.startsWith('image/') 
+                      ? <>
+                          <PiImagesSquareBold style={{ marginRight: '8px' }} />
+                          Preview Image
+                        </>
+                      : <>
+                          <FcDocument style={{ marginRight: '8px' }} />
+                          Preview Document
+                        </>
+                    : 'Preview File'} 
+                </h6>
+                </div>
                 )}
+                <PreviewModal
+                  show={showPreviewModal}
+                  onHide={handleCloseModal}
+                  preview={preview}
+                  fileType={fileType}
+                />
               </div>
             </div>
-            <h1 className="pt-5">Contact Perseonal Details</h1>
+            <h1 className="pt-5">Contact Details Of Client</h1>
             <hr></hr>
             <div className="row">
               <div className="col-sm-4 col-md-4 col-lg-4">
                 <Form.Group className="mb-3" controlId="fullName">
-                  <Form.Label className="fs-5 fw-bolder">Primary Person Full Name</Form.Label>
-                  <Form.Control 
-                    type="text" 
-                    placeholder="Enter Full Name"
-                    value={PrimaryFullName}
-                    onChange={handlePrimaryFullName}
+                  <Form.Label className="fs-5 fw-bolder">Primary Person Full Name<span className="text-danger">*</span></Form.Label>
+                  <Controller
+                    name="PrimaryFullName"
+                    control={control}
+                    render={({ field }) => <input {...field} className="form-control" placeholder="Enter Primary Perseonal Details"/>}
                   />
+                  {errors.PrimaryFullName && <p className="text-danger">{errors.PrimaryFullName.message}</p>}                
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="fullName">
                   <Form.Label className="fs-5 fw-bolder">Secondary Person Full Name</Form.Label>
-                  <Form.Control 
-                    type="text" 
-                    placeholder="Enter Full Name"
-                    value={SecondaryFullName}
-                    onChange={handleSecondaryFullName}
+                  <Controller
+                    name="SecondaryFullName"
+                    control={control}
+                    render={({ field }) => <input {...field} className="form-control" placeholder="Enter Secondary Perseon Details"/>}
                   />
+                  {errors.SecondaryFullName && <p className="text-danger">{errors.SecondaryFullName.message}</p>}
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label className="fs-5 fw-bolder">Project Manager<span className="text-danger">*</span></Form.Label>
+                  <Controller
+                    name="projectManager"
+                    control={control}
+                    render={({ field }) => <input {...field} className="form-control" placeholder="Enter Project Manager Name" />}
+                  />
+                  {errors.projectManager && <p className="text-danger">{errors.projectManager.message}</p>}
                 </Form.Group>
               </div>
               <div className="col-sm-4 col-md-4 col-lg-4">
                 <Form.Group className="mb-3" controlId="primaryPhoneNo">
-                  <Form.Label className="fs-5 fw-bolder">Primary Mobile Number</Form.Label>
-                  <Form.Control 
-                    type="text" 
-                    placeholder="Enter Phone Number"
-                    value={PrimaryPhoneNo}
-                    onChange={handlePrimaryPhoneNo} 
+                  <Form.Label className="fs-5 fw-bolder">Primary Mobile Number<span className="text-danger">*</span></Form.Label>
+                  <Controller
+                    name="PrimaryPhoneNo"
+                    control={control}
+                    render={({ field }) => <input {...field} className="form-control" placeholder="Enter Primary Person Mobile Number"/>}
                   />
+                  {errors.PrimaryPhoneNo && <p className="text-danger">{errors.PrimaryPhoneNo.message}</p>}
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="secondryPhoneNo">
                   <Form.Label className="fs-5 fw-bolder">Secondary Mobile Number</Form.Label>
-                  <Form.Control 
-                    type="text" 
-                    placeholder="Enter Phone Number"
-                    value = {SecondaryPhoneNo}
-                    onChange={handleSecondaryPhoneNo} 
+                  <Controller
+                    name="SecondaryPhoneNo"
+                    control={control}
+                    render={({ field }) => <input {...field} className="form-control" placeholder ="Enter Secondary Person Mobile Number" />}
                   />
+                  {errors.SecondaryPhoneNo && <p className="text-danger">{errors.SecondaryPhoneNo.message}</p>}
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label className="fs-5 fw-bolder">Number Of Auditor<span className="text-danger">*</span></Form.Label>
+                  <Controller
+                    name="noOfauditor"
+                    control={control}
+                    render={({ field }) => <input {...field} className="form-control" Placeholder = "Enter Number of Auditor"/>}
+                  />
+                  {errors.noOfauditor && <p className="text-danger">{errors.noOfauditor.message}</p>}
                 </Form.Group>
               </div>
               <div className="col-sm-4 col-lg-4 col-md-4">
                 <Form.Group className="mb-3" controlId="primaryemail">
-                  <Form.Label className="fs-5 fw-bolder">Primary E-Mail</Form.Label>
-                  <Form.Control 
-                    type="text" 
-                    placeholder="Enter Primary E-mail" 
-                    value = {PrimaryEmail}
-                    onChange={handleEmailChange}
+                  <Form.Label className="fs-5 fw-bolder">Primary E-Mail<span className="text-danger">*</span></Form.Label>
+                  <Controller
+                    name="PrimaryEmail"
+                    control={control}
+                    render={({ field }) => <input {...field} className="form-control" placeholder = "Enter Primary Person E-mail ID"/>}
                   />
+                  {errors.PrimaryEmail && <p className="text-danger">{errors.PrimaryEmail.message}</p>}
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="Secondaryemail">
                   <Form.Label className="fs-5 fw-bolder">Secondary E-Mail</Form.Label>
-                  <Form.Control 
-                    type="email" 
-                    placeholder="Enter Secondary E-mail" 
-                    value = {SecondaryEmail}
-                    onChange={handleSecondaryEmail}
+                  <Controller
+                    name="SecondaryEmail"
+                    control={control}
+                    render={({ field }) => <input {...field} className="form-control" placeholder = "Enter Secondary Person E-mail Id"/>}
                   />
+                  {errors.SecondaryEmail && <p className="text-danger">{errors.SecondaryEmail.message}</p>}
                 </Form.Group>
               </div>
             </div>  
-            <Button variant="primary" type="submit">
-              Submit
+            <Button variant="primary" type="submit" onClick={handleButtonClick} disabled={loading}>
+            {loading ? (
+                <Spinner animation="border" size="sm" />
+              ) : (
+                'Submit'
+              )}
             </Button>
           </Form>
         </div>
