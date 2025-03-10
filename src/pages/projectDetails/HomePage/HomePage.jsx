@@ -1,25 +1,27 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { IoMdAdd } from "react-icons/io";
 import Form from "react-bootstrap/Form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import validationSchema from '../../validation/validationSchema'
+import validationSchema from '../../../validation/validationSchema'
 import { Button, Spinner } from 'react-bootstrap'; 
 import "bootstrap/dist/css/bootstrap.min.css";
 import DatePicker from "react-datepicker";
 import { MultiSelect } from "react-multi-select-component";
-import { postPerseonlData } from '../../api/ProjectDetailsAPI/projectDetailsApi'
-import { postdirectrate, getdirectrate } from '../../api/directrateAPI/directrate'
-import {postProjectTypeList, getProjectTypeList} from '../../api/projectTypeListApi/projectTypeListApi'
+import { postPerseonlData } from '../../../api/ProjectDetailsAPI/projectDetailsApi'
+import { postdirectrate, getdirectrate } from '../../../api/directrateAPI/directrate'
+import {postProjectTypeList, getProjectTypeList} from '../../../api/projectTypeListApi/projectTypeListApi'
 import "react-datepicker/dist/react-datepicker.css";
-import "./homePage.css";
 import { useForm, Controller } from "react-hook-form";
-import PreviewModal from '../../components/previewfile/preview';
+import PreviewModal from '../../../components/previewfile/preview';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Popup from '../../components/popupBox/PopupBox'
-import FormComponent from '../../components/formComponent/formcomponent'
+import Popup from '../../../components/popupBox/PopupBox'
+import FormComponent from '../../../components/formComponent/formcomponent'
 import { PiImagesSquareBold } from "react-icons/pi";
 import { FcDocument } from "react-icons/fc";
+import { useNavigate } from 'react-router-dom';
+import Select from "react-select";
+import "./homePage.css";
 
 
 const HomePage = () => {
@@ -38,12 +40,15 @@ const HomePage = () => {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showDirectrateModal, setShowDirectrateModal] = useState(false);
   const [projectTypeName, setProjectTypeName] = useState([]); 
+  const [directrateOptions, setDirectrateOptions]= useState([])
   const [error, setError] = useState(null);
   const [directrateName, setDirectrateName] = useState('');
   const [projectTypes, setProjectTypes] = useState([]);
   const [loading, setLoading] = useState(false); 
   const [fileType, setFileType] = useState(''); 
   const [directrateList, setDirectrateList] = useState(''); 
+  const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
   
   useEffect(() => {
@@ -70,15 +75,21 @@ const HomePage = () => {
   }, []);
   
   useEffect(() => {
-     const fetchdirectrateList = async () => {
-       setLoading(true);
-       setError("");
-   
-       try {
+    const fetchDirectrateList = async () => {
+      setLoading(true);
+      setError("");
+  
+      try {
         const response = await getdirectrate();
-        console.log('response', response)
+  
         if (response && response.data && response.data.data && Array.isArray(response.data.data)) {
-          setDirectrateList(response.data.data);  
+
+          const options = response.data.data.map((directrate) => ({
+            label: directrate.directrate, 
+            value: directrate._id, 
+          }));
+  
+          setDirectrateOptions(options);
         } else {
           throw new Error("Unexpected data format or empty directrate list");
         }
@@ -89,9 +100,9 @@ const HomePage = () => {
         setLoading(false);
       }
     };
-   
-     fetchdirectrateList();
-   }, [])
+  
+    fetchDirectrateList();
+  }, []);
 
   const handleFormdataSubmit = async (data) => {
     const payload = {
@@ -111,19 +122,57 @@ const HomePage = () => {
       primaryPersonEmail: data.PrimaryEmail,
       directrate: data.DirectrateName,
       serviceLocation: data.ServiceLoction,
-      noOfauditor:data.noOfauditor,
+      // noOfauditor:data.noOfauditor,
       projectManager:data.projectManager,
       projectType: data.selectedProjectTypes.map(type => type.value),
       workOrder: uploadedFile,
     };
+ 
     setLoading(true);
     try{
-      await postPerseonlData(payload);
-      reset();
-      toast.success('Form submitted successfully!', {
-        className: 'custom-toast custom-toast-success',
-      });
-
+      console.log(payload)
+      const response = await postPerseonlData(payload);
+      if (response.statusCode === 200) {
+        reset({
+          workOrderNo: '',
+          orderType: '',
+          type: '',
+          OrganisationName: '',
+          ProjectName: '',
+          startDate: null,
+          endDate: null,
+          ProjectValue: '',
+          PrimaryFullName: '',
+          SecondaryFullName: '',
+          PrimaryPhoneNo: '',
+          SecondaryPhoneNo: '',
+          SecondaryEmail: '',
+          PrimaryEmail: '',
+          DirectrateName: '',
+          ServiceLoction: '',
+          projectManager: '',
+          selectedProjectTypes: [],
+          uploadedFile:null,
+        });
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        setPreview(null);
+        setUploadedFile(null);
+        setFileType("");
+  
+        toast.success('Form submitted successfully!', {
+          className: 'custom-toast custom-toast-success',
+        });
+      } else if(response.statusCode === 400 && response.message.includes("Work Order Number")){
+        toast.error(response.message, {
+          className: "custom-toast custom-toast-error",
+        });
+      }else if(response.statusCode === 400 && response.message.includes("Project Name")){
+        toast.error(response.message, {
+          className: "custom-toast custom-toast-error",
+        });
+      }
     }catch(error){
       toast.error('Failed to submit the form.', {
         className: 'custom-toast custom-toast-error',
@@ -141,14 +190,52 @@ const HomePage = () => {
     const payload = {
       ProjectTypeName:projectTypeName 
     }
-    await postProjectTypeList(payload);
+    setLoading(true);
+    try{
+      const response = await postProjectTypeList(payload);
+      if (response.statusCode === 200){
+        toast.success("Project type added successfully!",{
+           className: 'custom-toast custom-toast-success'
+      });
+        setProjectTypeName("");
+      } else if (response.statusCode === 400 && response.message.includes("Scope of work already exist")){
+        toast.error(response.message, {
+          className: "custom-toast custom-toast-error",
+        });
+      }
+    }catch(error){ 
+      toast.error(error?.message || "Failed to add Scope Of Work.", {
+        className: "custom-toast custom-toast-error",
+      });
+    }finally{
+      setLoading(false);
+    }
   }
 
   const handleDirectrateFormSubmit = async()=>{
     const payload ={
       directrate:directrateName,
     }
-    await postdirectrate(payload);
+    setLoading(true);
+    try{
+      const response = await postdirectrate(payload);
+      if(response.statusCode == 200){
+        toast.success("Project type added successfully!",{
+          className: 'custom-toast custom-toast-success'
+        });
+        setDirectrateName('')
+      }else if (response.statusCode === 400 && response.message.includes("Directorates already exist")){
+        toast.error(response.message, {
+          className: "custom-toast custom-toast-error",
+        });
+      }
+    } catch(error){
+      toast.error(error?.message || "Failed to add Scope Of Work.", {
+        className: "custom-toast custom-toast-error",
+      });
+    }finally{
+      setLoading(false);
+    }
   }
 
   const handleInputChange = (e) => {
@@ -204,6 +291,10 @@ const HomePage = () => {
     setShowPreviewModal(false); 
   };
 
+  const handleBackClick = ()=>{
+    navigate(`/home`) 
+  }
+
   return (
     <div className="home-page">
         <ToastContainer  position="top-center" autoClose={5000} hideProgressBar={false} />
@@ -216,8 +307,8 @@ const HomePage = () => {
         handleAdd={handleDirectrateFormSubmit}   
       >     
       <FormComponent
-        label="Add Directrate Name" 
-        placeholder="Enter Directrate Name"
+        label="Add Directorates Name" 
+        placeholder="Enter Directorates Name"
         value={directrateName} 
         onChange={handleDirectrateInputChange}
       />
@@ -237,7 +328,16 @@ const HomePage = () => {
         onChange={handleInputChange} 
       />
       </Popup>
-      <h1>Project Details</h1>
+      <div className="row">
+        <div className="col-sm-11 col-md-11 col-lg-11">
+          <h1>Project Details</h1>
+        </div>
+        <div className="col-sm-1 col-md-1 col-lg-1">
+          <Button variant="danger" className='btn btn-success ' onClick={handleBackClick}>
+              BACK
+          </Button>
+        </div>
+      </div>
       <hr />
       <div className="container-fluid">
         <div className="row">
@@ -260,6 +360,7 @@ const HomePage = () => {
                     <Controller
                       name="orderType"
                       control={control}
+                      defaultValue=""
                       render={({ field }) => (
                         <div className="row">
                           <div className="col-sm-3 col-lg-3 col-md-3">
@@ -270,6 +371,7 @@ const HomePage = () => {
                                 id="1"
                                 value="GeM"
                                 className="form-check-input"
+                                checked={field.value === "GeM"}
                               />
                               <label htmlFor="11" className="form-check-label">GeM</label>
                             </div>
@@ -282,6 +384,7 @@ const HomePage = () => {
                             id="2"
                             value="Nomination"
                             className="form-check-input"
+                            checked={field.value === "Nomination"}
                           />
                           <label htmlFor="2" className="form-check-label">Nomination</label>
                         </div>
@@ -298,6 +401,7 @@ const HomePage = () => {
                   <Controller
                     name="type"
                     control={control}
+                    defaultValue=""
                     render={({ field }) => (
                       <div className="row">
                         <div className="col-sm-3 col-lg-3 col-md-3">
@@ -308,6 +412,7 @@ const HomePage = () => {
                               id="1"
                               value="PSU"
                               className="form-check-input"
+                              checked={field.value === "PSU"}
                             />
                             <label htmlFor="1" className="form-check-label">PSU</label>
                           </div>
@@ -320,6 +425,7 @@ const HomePage = () => {
                               id="2"
                               value="Govt"
                               className="form-check-input"
+                              checked={field.value === "Govt"}
                             />
                             <label htmlFor="2" className="form-check-label">Govt</label>
                           </div>
@@ -332,6 +438,7 @@ const HomePage = () => {
                               id="3"
                               value="Private"
                               className="form-check-input"
+                              checked={field.value === "Private"}
                             />
                             <label htmlFor="3" className="form-check-label">Private</label>
                           </div>
@@ -416,11 +523,14 @@ const HomePage = () => {
                         name="selectedProjectTypes"
                         control={control}
                         render={({ field }) => (
-                          <MultiSelect
-                            options={projectTypes} 
-                            value={field.value} 
-                            onChange={(selected) => setValue('selectedProjectTypes', selected)} 
-                            labelledBy="Select"
+                          <Select
+                            {...field}
+                            options={projectTypes} // Options from API
+                            isMulti // Enables multi-selection
+                            getOptionLabel={(e) => e.label}
+                            getOptionValue={(e) => e.value}
+                            onChange={(selected) => setValue("selectedProjectTypes", selected)} // Updates the form value
+                            placeholder="Select Project Types"
                           />
                         )}
                       />
@@ -439,23 +549,20 @@ const HomePage = () => {
                 <Form.Group className="mb-3" controlId="directrate">
                   <div className="row">
                     <div className='col-sm-10 col-md-10 col-lg-10'>
-                      <Form.Label className="fs-5 fw-bolder">Directrate<span className="text-danger">*</span></Form.Label>
+                      <Form.Label className="fs-5 fw-bolder">Directorates<span className="text-danger">*</span></Form.Label>
                       <Controller
                         name="DirectrateName"
                         control={control}
                         render={({ field }) => (
-                          <Form.Select {...field} className="form-control" disabled={loading}>
-                            <option value="">Select Directrate</option>
-                            {directrateList.length > 0 ? (
-                              directrateList.map((directrate) => (
-                                <option key={directrate._id} value={directrate.directrate}>
-                                  {directrate.directrate}
-                                </option>
-                              ))
-                            ) : (
-                              <option disabled>No directrates available</option>
-                            )}
-                          </Form.Select>
+                          <Select
+                          {...field}
+                          options={directrateOptions} 
+                          value={directrateOptions.find(option => option.label === field.value) || null}
+                          isClearable
+                          isDisabled={loading}
+                          placeholder="Select Directorate"
+                          onChange={(selectedOption) => field.onChange(selectedOption ? selectedOption.label : "")}
+                        />
                         )}
                       />
                       {errors.DirectrateName && <p className="text-danger">{errors.DirectrateName.message}</p>}
@@ -474,6 +581,7 @@ const HomePage = () => {
                     <Form.Control
                       {...field}
                       type="file"
+                      ref={fileInputRef}
                       onChange={(e) => {
                         handleFileChange(e);
                         field.onChange(e); 
@@ -566,7 +674,7 @@ const HomePage = () => {
                   />
                   {errors.SecondaryPhoneNo && <p className="text-danger">{errors.SecondaryPhoneNo.message}</p>}
                 </Form.Group>
-                <Form.Group className="mb-3">
+                {/* <Form.Group className="mb-3">
                   <Form.Label className="fs-5 fw-bolder">Number Of Auditor<span className="text-danger">*</span></Form.Label>
                   <Controller
                     name="noOfauditor"
@@ -574,7 +682,7 @@ const HomePage = () => {
                     render={({ field }) => <input {...field} className="form-control" Placeholder = "Enter Number of Auditor"/>}
                   />
                   {errors.noOfauditor && <p className="text-danger">{errors.noOfauditor.message}</p>}
-                </Form.Group>
+                </Form.Group> */}
               </div>
               <div className="col-sm-4 col-lg-4 col-md-4">
                 <Form.Group className="mb-3" controlId="primaryemail">

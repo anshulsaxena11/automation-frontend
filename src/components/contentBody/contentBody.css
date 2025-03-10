@@ -1,6 +1,47 @@
 .content-body {
+  transition: margin-left 0.3s ease-in-out, margin-top 0.3s ease-in-out;
   padding: 20px;
-  background-color: #f4f4f4;
-  min-height: 100vh;
-  transition: margin-left 0.3s ease-in-out;
+  background-color: #f9f9f9; /* Light background for content */
+  height: 100vh; /* Ensure it takes full height */
+  overflow-y: auto; /* Scrollable content */
+  margin-top: 20px; /* Adjust the top margin for better spacing */
+  margin-right: 20px; /* Add right margin */
 }
+
+.content-body.expanded {
+  margin-left: 300px; /* When sidebar is expanded */
+}
+
+.content-body.collapsed {
+  margin-left: 100px; /* When sidebar is collapsed */
+}
+
+.page-content {
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.default-content,
+.about-page-content,
+.services-page-content,
+.contact-page-content {
+  text-align: center;
+}
+
+.default-content h1,
+.about-page-content h1,
+.services-page-content h1,
+.contact-page-content h1 {
+  font-size: 2rem;
+  color: #333;
+}
+
+.default-content p,
+.about-page-content p,
+.services-page-content p,
+.contact-page-content p {
+  font-size: 1rem;
+  color: #777;
+}
+
+

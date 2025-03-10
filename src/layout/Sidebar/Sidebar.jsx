@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import { FaBars, FaHome, FaInfoCircle, FaBriefcase, FaPhone } from "react-icons/fa";
+import { BiSolidReport } from "react-icons/bi";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import "./Sidebar.css";
 
-const Sidebar = ({ onToggle, onPageSelect }) => {
+const Sidebar = ({ onToggle }) => {
   const [isExpanded, setIsExpanded] = useState(true);
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const toggleSidebar = () => {
     const newState = !isExpanded;
@@ -12,7 +15,12 @@ const Sidebar = ({ onToggle, onPageSelect }) => {
   };
 
   const handlePageSelect = (page) => {
-    onPageSelect(page);
+    // Use navigate to change the route
+    if (page === "ProjectDetailsList") {
+      navigate("/home");
+    } else if (page === "report") {
+      navigate("/report");
+    }
   };
 
   return (
@@ -21,14 +29,15 @@ const Sidebar = ({ onToggle, onPageSelect }) => {
         <FaBars />
       </button>
       <ul className="menu">
-        <li className="menu-item" onClick={() => handlePageSelect("home")}>
+        <li className="menu-item" onClick={() => handlePageSelect("ProjectDetailsList")}>
           <FaHome className="icon" />
           {isExpanded && <span className="label">Home</span>}
         </li>
         <li className="menu-item" onClick={() => handlePageSelect("report")}>
-          <FaInfoCircle className="icon" />
+          <BiSolidReport className="icon" />
           {isExpanded && <span className="label">Report</span>}
         </li>
+        {/* You can uncomment these lines if you want to add Services and Contact pages */}
         {/* <li className="menu-item" onClick={() => handlePageSelect("services")}>
           <FaBriefcase className="icon" />
           {isExpanded && <span className="label">Services</span>}

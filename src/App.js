@@ -1,32 +1,24 @@
 import React, { useState } from "react";
+import { BrowserRouter as Router } from "react-router-dom";
 import Sidebar from "./layout/Sidebar/Sidebar";
 import ContentBody from "./components/contentBody/ContentBody";
-import AppRoutes from "./routes/Routes"
+import AppRoutes from "./routes/Routes"; // Ensure you use React Router here
 import "./App.css";
 
 function App() {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
-  const [selectedPage, setSelectedPage] = useState("home"); 
 
   const handleSidebarToggle = (isExpanded) => {
     setIsSidebarExpanded(isExpanded);
   };
 
-  const handlePageSelect = (page) => {
-    setSelectedPage(page);
-  };
-
   return (
-    <div className="App">
-      <Sidebar onToggle={handleSidebarToggle} onPageSelect={handlePageSelect} />
-      {/* <ContentBody isSidebarExpanded={isSidebarExpanded} selectedPage={selectedPage} /> */}
-      <ContentBody
-        isSidebarExpanded={isSidebarExpanded}
-        selectedPage={selectedPage}
-        setSelectedPage={setSelectedPage} // Pass setSelectedPage to ContentBody
-      />
-      <AppRoutes />
-    </div>
+    <Router>
+      <div className="App">
+        <Sidebar onToggle={handleSidebarToggle} />
+        <ContentBody isSidebarExpanded={isSidebarExpanded} />
+      </div>
+    </Router>
   );
 }
 

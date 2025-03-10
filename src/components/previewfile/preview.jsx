@@ -3,6 +3,9 @@ import { Modal, Button } from 'react-bootstrap';
 
 
 const PreviewModal = ({ show, onHide, preview, fileType }) => {
+  if (!fileType) {
+    return null; 
+  }
   return (
     <Modal show={show} onHide={onHide}>
       <Modal.Header closeButton>

@@ -3,12 +3,18 @@ import * as yup from "yup";
 export const reportValidationSchema = yup.object().shape({
   Recomendation:yup.string().required("Enter Recomendation"),
   Referance:yup.string().required("Enter Referance"),
-  VulnerableParameter:yup.string().required("Enter Vulnerable Parameter"),
-  Impact:yup.string().required("Enter Vulnerable Parameter"),
+  selectedVulnerability:yup.string().required("Enter Vulnerable Name"),
+  Impact:yup.string().required("Enter Impact Parameter"),
   Path:yup.string().required("Enter Path"),
   Description:yup.string().required("Enter Description"),
   selectedProjectName:yup.string().required("Select Project Name"),
   ProjectType:yup.string().required("Select Project Type"),
+  severity:yup.string(),
+  device:yup.string().nullable().when("ProjectType",{
+    is:"Devices",
+    then: yup.string().required("Device is required"),
+    otherwise:yup.string().nullable()
+  }),
   proofOfConcept: yup.array().of(
     yup.object().shape({
       text: yup.string().when('index', {

@@ -20,6 +20,7 @@ const validationSchema = yup.object({
     otherwise: yup.date(), 
   }),
   ProjectName: yup.string().required("Project Name is required"),
+  device:yup.string(),
   ProjectValue: yup.number().positive().required("Project Value is required"),
   ServiceLoction: yup.string().required("Service Location is required"),
   DirectrateName: yup.string().required("Directrate Name is required"),
@@ -29,7 +30,7 @@ const validationSchema = yup.object({
   SecondaryPhoneNo: yup.string().matches(/^\d{10}$/, "Secondary Phone Number must be 10 digits"),
   PrimaryEmail: yup.string().email("Invalid email format").required("Primary Email is required"),
   projectManager: yup.string().required("Project Manager Name is required"),
-  noOfauditor:yup.number().positive().required("auditor Value is required"),
+  // noOfauditor:yup.number().positive().required("auditor Value is required"),
   SecondaryEmail: yup.string().email("Invalid email format"),
   selectedProjectTypes: yup.array()
   .min(1, 'You must select at least one project type')
