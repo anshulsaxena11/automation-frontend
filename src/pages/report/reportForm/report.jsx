@@ -1,4 +1,4 @@
-import React, { useState, useEffect  } from 'react';
+import React, { useState, useEffect, useRef  } from 'react';
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm, Controller } from "react-hook-form";
 import reportValidationSchema from '../../../validation/reportValidationSchema';
@@ -15,6 +15,7 @@ import Select from 'react-select';
 import PreviewModal from "../../../components/previewfile/preview"
 import { PiImagesSquareBold } from "react-icons/pi";
 import { getProjectNameList, getProjectTypeList } from '../../../api/ProjectDetailsAPI/projectDetailsApi'
+import {getAllRound, postAddRound} from '../../../api/roundApi/round'
 import { IoIosSave } from "react-icons/io";
 import { TiArrowBack } from "react-icons/ti";
 import'./report.css'
@@ -24,7 +25,7 @@ const ReportPage = () => {
     resolver: yupResolver(reportValidationSchema),
   
   });
-
+  
   const [vulnerabilityOptions, setVulnerabilityOptions] = useState([]);
   const [selectedVulnerability, setSelectedVulnerability] = useState(null);
   const [searchQuery, setSearchQuery] = useState(""); 
@@ -51,7 +52,20 @@ const ReportPage = () => {
   const [selectDevice, setSelectDevice] = useState([])
   const navigate = useNavigate();
   const [disableDevices, setDisableDevices] = useState("")
+  const fileInputRefs = useRef([]);
+  const defaultRounds = [
+    { value: '1', label: 'Round 1' },
+    { value: '2', label: 'Round 2' },
+    { value: '3', label: 'Round 3' },
+    { value: '4', label: 'Round 4' },
+    { value: 'add', label: '➕ Add Round' }
+  ];
+  
+  const [roundOptions, setRoundOptions] = useState([]);
 
+  useEffect(() => {
+    loadRounds();
+  }, []);
   
   useEffect(() => {
     const fetchVulnerabilities = async () => {
@@ -191,6 +205,57 @@ const ReportPage = () => {
     fetchProjectTypes();
   }, [selectedProjectName]);
 
+  const loadRounds = async () => {
+    try {
+      const res = await getAllRound();
+      const options = res.data.data || [];
+      const withAddOption = [
+        ...options,
+        { label: "➕ Add Round", value: "add_round", isAddOption: true },
+      ];
+      setRoundOptions(withAddOption);
+    } catch (err) {
+      console.error("Error loading rounds:", err);
+    }
+  };
+
+  const addNewRound = async () => {
+      const nextRoundNumber = roundOptions.length; // exclude "Add Round"
+      const newValue = nextRoundNumber.toString();
+      const newLabel = `Round ${newValue}`;
+      try {
+        await postAddRound(newValue, newLabel);
+        await loadRounds();
+        // After reload, select the newly added round
+        setValue("round", { label: newLabel, value: newValue });
+      } catch (error) {
+        console.error("Error adding round:", error);
+      }
+    };
+
+  const handleRoundChange = (selectedOption) => {
+    if (selectedOption.value === 'add') {
+      const numericRounds = roundOptions
+        .filter(opt => !isNaN(opt.value))
+        .map(opt => parseInt(opt.value));
+      const nextRound = Math.max(...numericRounds) + 1;
+  
+      const newRoundOption = { value: `${nextRound}`, label: `Round ${nextRound}` };
+      const updatedOptions = [
+        ...roundOptions.slice(0, -1),
+        newRoundOption,
+        { value: 'add', label: '➕ Add Round' }
+      ];
+  
+      setRoundOptions(updatedOptions);
+      setRound(newRoundOption);
+      localStorage.setItem("roundOptions", JSON.stringify(updatedOptions)); // persist
+    } else {
+      const selectedRound = selectedOption.value
+      setRound(selectedRound);
+    }
+  };
+
 const handleAddStep = () => {
   setProofOfConcepts([...proofOfConcepts, { text: "", file: null, preview: null }]);
 };
@@ -255,7 +320,7 @@ const handleFileChange = (index, event) => {
       references:data.Referance,
       recomendation:data.Recomendation,
       proofOfConcept: formattedProofOfConcept,
-      devices:selectDevice.label,
+      devices:selectDevice?.label || "",
       proof: formattedProofOfConcept.map((item) => item.proof),
     }
     
@@ -280,6 +345,9 @@ const handleFileChange = (index, event) => {
         { text: "", file: null, preview: null },
         { text: "", file: null, preview: null }
       ]);
+      fileInputRefs.current.forEach((input) => {
+        if (input) input.value = "";
+      });
       toast.success('Form submitted successfully!', {
         className: 'custom-toast custom-toast-success',
       });
@@ -387,7 +455,33 @@ const handleFileChange = (index, event) => {
               </Form.Group>
                 <Form.Group className="mb-3">
                   <Form.Label className="fs-5 fw-bolder">Round<span className="text-danger">*</span></Form.Label>
-                  <Form.Select
+                  <Controller
+                    name="round"
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field }) => (
+                      <Select
+                        {...field}
+                        options={roundOptions}
+                        placeholder="Select Round"
+                        onChange={(selected) => {
+                          if (selected?.isAddOption) {
+                            addNewRound();
+                          } else {
+                            field.onChange(selected);
+                          }
+                        }}
+                      />
+                    )}
+                  />
+                  {/* <Select
+                    value={round}
+                    onChange={handleRoundChange}
+                    options={roundOptions}
+                    placeholder="Select Round"
+                    isClearable
+                  /> */}
+                  {/* <Form.Select
                     value={round}
                     onChange={handleround}
                     required
@@ -398,7 +492,7 @@ const handleFileChange = (index, event) => {
                     <option value="3">Round 3</option>
                     <option value="4">Round 4</option>
                     <option value="4">Add Round</option>
-                  </Form.Select>
+                  </Form.Select> */}
                 </Form.Group>
                 <Form.Group className="mb-3">
                   <Form.Label className="fs-5 fw-bolder">Severity<span className="text-danger">*</span></Form.Label>
@@ -600,7 +694,7 @@ const handleFileChange = (index, event) => {
                       />
                     </div>
                     <div className="col-md-6 mt-3">
-                    <Form.Control type="file"  accept=".jpeg,.jpg" onChange={(e) => handleFileChange(index, e)} />
+                    <Form.Control type="file"  accept=".jpeg,.jpg" onChange={(e) => handleFileChange(index, e)}   ref={(el) => (fileInputRefs.current[index] = el)} />
                     {proof.preview && (
                       <div className="mt-2" style={{ cursor: 'pointer', marginTop: '10px' }}>
                         <h6 variant="primary" onClick={() => setShowPreview(true)}>

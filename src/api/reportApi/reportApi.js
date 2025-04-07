@@ -35,3 +35,7 @@ export const updateReport = async (id, formData) => {
     
     return await axiosInstance.put(`/user/report/${id}`, formData, config);
 };
+
+export const getFullReport = async(projectName, projectType, round) =>await axiosInstance.get('/user/fullreport',{
+    params:{projectName, projectType, round}
+})
