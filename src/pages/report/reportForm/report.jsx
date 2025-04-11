@@ -52,15 +52,7 @@ const ReportPage = () => {
   const [selectDevice, setSelectDevice] = useState([])
   const navigate = useNavigate();
   const [disableDevices, setDisableDevices] = useState("")
-  const fileInputRefs = useRef([]);
-  const defaultRounds = [
-    { value: '1', label: 'Round 1' },
-    { value: '2', label: 'Round 2' },
-    { value: '3', label: 'Round 3' },
-    { value: '4', label: 'Round 4' },
-    { value: 'add', label: '➕ Add Round' }
-  ];
-  
+  const fileInputRefs = useRef([]); 
   const [roundOptions, setRoundOptions] = useState([]);
 
   useEffect(() => {
@@ -120,7 +112,6 @@ const ReportPage = () => {
     }
  
   };
-
 
   useEffect(() => {
     setValue("selectedProjectName", ""); 
@@ -220,39 +211,16 @@ const ReportPage = () => {
   };
 
   const addNewRound = async () => {
-      const nextRoundNumber = roundOptions.length; // exclude "Add Round"
-      const newValue = nextRoundNumber.toString();
-      const newLabel = `Round ${newValue}`;
-      try {
-        await postAddRound(newValue, newLabel);
-        await loadRounds();
-        // After reload, select the newly added round
-        setValue("round", { label: newLabel, value: newValue });
-      } catch (error) {
-        console.error("Error adding round:", error);
-      }
-    };
-
-  const handleRoundChange = (selectedOption) => {
-    if (selectedOption.value === 'add') {
-      const numericRounds = roundOptions
-        .filter(opt => !isNaN(opt.value))
-        .map(opt => parseInt(opt.value));
-      const nextRound = Math.max(...numericRounds) + 1;
-  
-      const newRoundOption = { value: `${nextRound}`, label: `Round ${nextRound}` };
-      const updatedOptions = [
-        ...roundOptions.slice(0, -1),
-        newRoundOption,
-        { value: 'add', label: '➕ Add Round' }
-      ];
-  
-      setRoundOptions(updatedOptions);
-      setRound(newRoundOption);
-      localStorage.setItem("roundOptions", JSON.stringify(updatedOptions)); // persist
-    } else {
-      const selectedRound = selectedOption.value
-      setRound(selectedRound);
+    try {
+      const res = await postAddRound();
+      loadRounds();
+      toast.success(res.data.message || 'Round added successfully!');
+      console.log('New Round:', res.data.data); 
+      return res.data.data;
+    } catch (err) {
+        toast.error(err.response?.data?.message || 'Failed to add round');
+        console.error(err);
+        return null;
     }
   };
 
@@ -310,7 +278,7 @@ const handleFileChange = (index, event) => {
     const payload={
       projectName:data.selectedProjectName,
       projectType:data.ProjectType,
-      round:round,
+      round:data.round,
       vulnerabilityName:data.selectedVulnerability,
       sevirty:data.severity,
       description:data.Description,
@@ -320,7 +288,7 @@ const handleFileChange = (index, event) => {
       references:data.Referance,
       recomendation:data.Recomendation,
       proofOfConcept: formattedProofOfConcept,
-      devices:selectDevice?.label || "",
+      devices:selectDevice?.label || null,
       proof: formattedProofOfConcept.map((item) => item.proof),
     }
     
@@ -338,6 +306,8 @@ const handleFileChange = (index, event) => {
       setValue("severity", null);
       setValue("selectedProjectName", null)
       setValue("Path","")
+      setValue("round",null)
+      setRoundOptions(null)
       setSelectedVulnerability(null);
       setSelectDevice(null);
       setProofOfConcepts([
@@ -377,8 +347,12 @@ const handleFileChange = (index, event) => {
       handleSubmit(handleFormSubmit)();
   };
  
-  const handleround=(e)=>{
-    setRound(e.target.value)
+  const handleround=(selected)=>{
+    if (selected?.isAddOption) {
+      addNewRound();
+    } else {
+      setValue("round",selected.value)
+    }
   }
 
   useEffect(() => {
@@ -449,9 +423,7 @@ const handleFileChange = (index, event) => {
                     />
                   )}
                 />
-
                 {errors.selectedProjectName && <p className="text-danger">{errors.selectedProjectName.message}</p>}
-
               </Form.Group>
                 <Form.Group className="mb-3">
                   <Form.Label className="fs-5 fw-bolder">Round<span className="text-danger">*</span></Form.Label>
@@ -462,37 +434,14 @@ const handleFileChange = (index, event) => {
                     render={({ field }) => (
                       <Select
                         {...field}
+                        value={roundOptions.find((option) => option.value === field.value)}
                         options={roundOptions}
                         placeholder="Select Round"
-                        onChange={(selected) => {
-                          if (selected?.isAddOption) {
-                            addNewRound();
-                          } else {
-                            field.onChange(selected);
-                          }
-                        }}
+                        onChange={handleround}
                       />
                     )}
                   />
-                  {/* <Select
-                    value={round}
-                    onChange={handleRoundChange}
-                    options={roundOptions}
-                    placeholder="Select Round"
-                    isClearable
-                  /> */}
-                  {/* <Form.Select
-                    value={round}
-                    onChange={handleround}
-                    required
-                  >
-                    <option value="">Select Round</option>
-                    <option value="1">Round 1</option>
-                    <option value="2">Round 2</option>
-                    <option value="3">Round 3</option>
-                    <option value="4">Round 4</option>
-                    <option value="4">Add Round</option>
-                  </Form.Select> */}
+                  {errors.round && <p className="text-danger">{errors.round.message}</p>}
                 </Form.Group>
                 <Form.Group className="mb-3">
                   <Form.Label className="fs-5 fw-bolder">Severity<span className="text-danger">*</span></Form.Label>

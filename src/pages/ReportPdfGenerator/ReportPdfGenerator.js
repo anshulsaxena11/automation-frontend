@@ -462,7 +462,10 @@ const ReportPdfGenerator = () => {
                 <Button variant="contained" color="primary" onClick={handleNextthree}>
                   Next
                 </Button>
-                <MSWordPreview fullReport={fullReport} />
+                <MSWordPreview 
+                  fullReport={fullReport} 
+                  projectDetailsReport ={projectDetailsReport}
+                />
               </div>
             </div>
             

@@ -5,6 +5,7 @@ export const reportValidationSchema = yup.object().shape({
   Referance:yup.string().required("Enter Referance"),
   selectedVulnerability:yup.string().required("Enter Vulnerable Name"),
   Impact:yup.string().required("Enter Impact Parameter"),
+  round:yup.string().required("Enter Round"),
   Path:yup.string().required("Enter Path"),
   Description:yup.string().required("Enter Description"),
   selectedProjectName:yup.string().required("Select Project Name"),

@@ -7,4 +7,4 @@ export const getRoundList = async (projectName, projectType) => {
 };
 
 export const getAllRound = async () => await axiosInstance.get('/user/roundList')
-export const postAddRound = async(value,label) => await axiosInstance.post('/user/roundList')
+export const postAddRound = async() => await axiosInstance.post('/user/roundList')

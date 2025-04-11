@@ -1,19 +1,44 @@
 import React, { useState } from "react";
 import { Button, Modal } from "react-bootstrap";
 import {
+  AlignmentType,
   Document,
+  Header,
+  Footer,
+  ImageRun,
   Packer,
   Paragraph,
-  TextRun,
   Table,
   TableCell,
   TableRow,
-  ImageRun,
+  TextRun,
+  PageNumber,
+  WidthType,
+  HeightRule 
 } from "docx";
 import { saveAs } from "file-saver";
 
 // Helper to safely return string or fallback
 const safeText = (text) => (text ? String(text) : "—");
+const pageFooter = new Footer({
+  children: [
+    new Paragraph({
+      alignment: AlignmentType.LEFT,
+      children: [
+        new TextRun({
+          font: "Cambria",
+          size: 20,
+          children: [
+            "P a g e | ",
+            PageNumber.CURRENT,
+            " of ",
+            PageNumber.TOTAL_PAGES,
+          ],
+        }),
+      ],
+    }),
+  ],
+});
 
 // Helper to fetch image as Uint8Array
 const fetchImageAsUint8Array = async (url) => {
@@ -46,17 +71,259 @@ const fetchImageAsUint8Array = async (url) => {
   }
 };
 
-const MSWordPreview = ({ fullReport }) => {
+const MSWordPreview = ({ fullReport, projectDetailsReport }) => {
   const [showPreview, setShowPreview] = useState(false);
 
   const generateDocument = async () => {
     try {
+      const watermarkUrl = "/images/Confidential.png";
+      const watermarkData = await fetchImageAsUint8Array(watermarkUrl);
+
+      // Watermark header
+      const watermarkHeader = watermarkData
+        ? new Header({
+            children: [
+              new Paragraph({
+                children: [
+                  new ImageRun({
+                    data: watermarkData,
+                    transformation: {
+                      width: 700,
+                      height: 1000,
+                    },
+                    floating: {
+                      horizontalPosition: {
+                        align: "center",
+                      },
+                      verticalPosition: {
+                        align: "center",
+                      },
+                      wrap: {
+                        type: "none",
+                      },
+                      behindDocument: true,
+                    },
+                  }),
+                ],
+              }),
+            ],
+          })
+        : new Header({ children: [] });
+
       const sections = [];
 
-      for (const [index, item] of fullReport.entries()) {
-        const children = [];
+      // TOC section (optional)
+      const tocSection = {
+        headers: { default: watermarkHeader },
+        footers:{default: pageFooter},
+        children: [
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "Table of Contents",
+                font: "Cambria",
+                size: 26,
+              }),
+            ],
+            heading: "Heading1",
+            spacing: { after: 400 },
+            alignment: AlignmentType.CENTER,
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "page",
+                font: "Cambria",
+                size: 26,
+              }),
+            ],
+            spacing: { after: 400 },
+            alignment: AlignmentType.RIGHT,
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "1.\tIntroduction\t\t\t\t\t\t\t\t\t\t4",
+                font: "Cambria",
+                size: 26,
+              }),
+            ],
+            spacing: { after: 200 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "2.\tAbout VAPT\t\t\t\t\t\t\t\t\t\t5",
+                font: "Cambria",
+                size: 26,
+              }),
+            ],
+            spacing: { after: 200 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "3.\tTools Used for Audit\t\t\t\t\t\t\t\t7",
+                font: "Cambria",
+                size: 26,
+              }),
+            ],
+            spacing: { after: 200 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "4.\tExecutive Summary\t\t\t\t\t\t\t\t8",
+                font: "Cambria",
+                size: 26,
+              }),
+            ],
+            spacing: { after: 200 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "5.\tPhase-1 Vulnerability details\t\t\t\t\t\t\t9",
+                font: "Cambria",
+                size: 26,
+              }),
+            ],
+            spacing: { after: 200 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "\tA.\tList of Vulnerable Parameter, Location Discovered\t\t\t–",
+                font: "Cambria",
+                size: 26,
+              }),
+            ],
+            spacing: { after: 200 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "\tB.\tVulnerable details of web application\t\t\t\t\t–",
+                font: "Cambria",
+                size: 26,
+              }),
+            ],
+            spacing: { after: 200 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "\tC.\tReview of Web server\t\t\t\t\t\t\t–",
+                font: "Cambria",
+                size: 26,
+              }),
+            ],
+            spacing: { after: 200 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "6.\tObservations\t\t\t\t\t\t\t\t\t–",
+                font: "Cambria",
+                size: 26,
+              }),
+            ],
+            spacing: { after: 200 },
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "7.\tBest Practices\t\t\t\t\t\t\t\t\t48",
+                font: "Cambria",
+                size: 26,
+              }),
+            ],
+          
+          }),
+          new Paragraph({ text: "", spacing: { after: 1000 } }),
+        ],
+      };
+      sections.push(tocSection);
+      const secondSection = {
+        headers: { default: watermarkHeader },
+        footers:{default: pageFooter},
+        children: [
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `ROUND-${safeText(fullReport?.[0]?.round)} VAPT REPORT`,
+                font: "Cambria",
+                size: 26,
+              }),
+            ],
+            heading: "Heading1",
+            alignment: AlignmentType.CENTER,
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "for",
+                font: "Cambria",
+                size: 26,
+              }),
+            ],
+            heading: "Heading1",
+            alignment: AlignmentType.CENTER,
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: "VAPT of the Official Web-Site of",
+                font: "Cambria",
+                size: 26,
+              }),
+            ],
+            heading: "Heading1",
+            alignment: AlignmentType.CENTER,
+          }),
+          new Paragraph({
+            children: [
+              new TextRun({
+                text: `${safeText(projectDetailsReport?.[0]?.projectName)},${safeText(projectDetailsReport?.[0]?.serviceLocation)} `,
+                font: "Cambria",
+                size: 26,
+              }),
+            ],
+            heading: "Heading1",
+            spacing: { after: 200 },
+            alignment: AlignmentType.CENTER,
+          }),
+          new Table({
+            rows: [
+              new TableRow({ 
+                height: {
+                  value: 500, 
+                  rule: HeightRule.EXACT,
+                },
+                children:[
+                new TableCell({
+                  width: {
+                    size: 1000,
+                    type: WidthType.DXA,
+                  },
+                  children: [
+                    new Paragraph("1,")], 
+                    alignment: AlignmentType.CENTER,
+                  })
+              ]})
+            ]
+          })
+         
+        ],
 
-        children.push(
+      }
+      sections.push(secondSection);
+
+      // Each vulnerability as a separate section
+      for (const [index, item] of fullReport.entries()) {
+        const sectionChildren = [];
+
+        sectionChildren.push(
           new Paragraph({
             children: [
               new TextRun({
@@ -135,22 +402,20 @@ const MSWordPreview = ({ fullReport }) => {
           );
         }
 
-        children.push(new Table({ rows }));
-        children.push(new Paragraph({ text: "", spacing: { after: 400 } }));
+        sectionChildren.push(new Table({ rows }));
+        sectionChildren.push(new Paragraph({ text: "", spacing: { after: 400 } }));
 
-        sections.push(children);
+        sections.push({
+          headers: { default: watermarkHeader },
+          children: sectionChildren,
+        });
       }
 
       const doc = new Document({
         creator: "Sayujnet",
         title: "Project Report",
         description: "Generated vulnerability report",
-        sections: [
-          {
-            properties: {},
-            children: sections.flat(),
-          },
-        ],
+        sections: sections,
       });
 
       const blob = await Packer.toBlob(doc);
