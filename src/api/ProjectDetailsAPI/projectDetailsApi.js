@@ -35,19 +35,6 @@ export const postPerseonlData = async (payload) => {
   export const getProjectDetailsList = async ({ page = 1, limit = 10, search = "" }) => axiosInstance.get("/user/projectDetails", { params: { page, limit, search } }).then(response => response.data);
   export const getProjectDetailsById = async (id) => await axiosInstance.get(`/user/projectDetails/${id}`).then(response => response.data).catch(error => { throw error });
   export const editProjectDetails = async (id, Payload, file) => {
-    // const formData = new FormData();
-
-    // // Append the Payload data to the FormData object
-    // Object.entries(Payload).forEach(([key, value]) => {
-    //     formData.append(key, value);
-    // });
-
-    // // If a file is provided, append it to the FormData object
-    // if (file) {
-    //     formData.append("workOrder", file);
-    // }
-
-    // Perform the PUT request with the FormData
     return await axiosInstance.put(`/user/projectDetails/${id}`, Payload, {
         headers: {
             "Content-Type": "multipart/form-data"

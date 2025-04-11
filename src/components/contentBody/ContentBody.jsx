@@ -9,6 +9,7 @@ import ReportView from "../../pages/report/reportView/reportView.jsx"
 import ProjectDetailsView from "../../pages/projectDetails/projectDetailView/projectDetailsView.jsx"
 import ProjectDetailsEdit from "../../pages/projectDetails/projectDetailsEdit/projectDetailsEdit.jsx"
 import VaptLoader from "../../components/loader/loader.jsx";
+import ReportPdfGenerator from "../../pages/ReportPdfGenerator/ReportPdfGenerator.js"
 import './contentBody.css'
 
 const ContentBody = ({ isSidebarExpanded }) => {
@@ -42,6 +43,7 @@ const ContentBody = ({ isSidebarExpanded }) => {
           <Route path="/newReport" element={<Report />} />
           <Route path="/newReportView/:id" element={<ReportView />} />
           <Route path="/editReport/:id" element={<EditReportForm />} />
+          <Route path ="/ReportPdfGenerator" element={<ReportPdfGenerator/>}/>
         </Routes>
       </div>
     </div>

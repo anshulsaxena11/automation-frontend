@@ -1,4 +1,4 @@
-import React, { useState, useEffect  } from 'react';
+import React, { useState, useEffect, useRef  } from 'react';
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm, Controller } from "react-hook-form";
 import reportValidationSchema from '../../../validation/reportValidationSchema';
@@ -15,6 +15,7 @@ import Select from 'react-select';
 import PreviewModal from "../../../components/previewfile/preview"
 import { PiImagesSquareBold } from "react-icons/pi";
 import { getProjectNameList, getProjectTypeList } from '../../../api/ProjectDetailsAPI/projectDetailsApi'
+import {getAllRound, postAddRound} from '../../../api/roundApi/round'
 import { IoIosSave } from "react-icons/io";
 import { TiArrowBack } from "react-icons/ti";
 import'./report.css'
@@ -24,7 +25,7 @@ const ReportPage = () => {
     resolver: yupResolver(reportValidationSchema),
   
   });
-
+  
   const [vulnerabilityOptions, setVulnerabilityOptions] = useState([]);
   const [selectedVulnerability, setSelectedVulnerability] = useState(null);
   const [searchQuery, setSearchQuery] = useState(""); 
@@ -51,7 +52,12 @@ const ReportPage = () => {
   const [selectDevice, setSelectDevice] = useState([])
   const navigate = useNavigate();
   const [disableDevices, setDisableDevices] = useState("")
+  const fileInputRefs = useRef([]); 
+  const [roundOptions, setRoundOptions] = useState([]);
 
+  useEffect(() => {
+    loadRounds();
+  }, []);
   
   useEffect(() => {
     const fetchVulnerabilities = async () => {
@@ -106,7 +112,6 @@ const ReportPage = () => {
     }
  
   };
-
 
   useEffect(() => {
     setValue("selectedProjectName", ""); 
@@ -191,6 +196,34 @@ const ReportPage = () => {
     fetchProjectTypes();
   }, [selectedProjectName]);
 
+  const loadRounds = async () => {
+    try {
+      const res = await getAllRound();
+      const options = res.data.data || [];
+      const withAddOption = [
+        ...options,
+        { label: "➕ Add Round", value: "add_round", isAddOption: true },
+      ];
+      setRoundOptions(withAddOption);
+    } catch (err) {
+      console.error("Error loading rounds:", err);
+    }
+  };
+
+  const addNewRound = async () => {
+    try {
+      const res = await postAddRound();
+      loadRounds();
+      toast.success(res.data.message || 'Round added successfully!');
+      console.log('New Round:', res.data.data); 
+      return res.data.data;
+    } catch (err) {
+        toast.error(err.response?.data?.message || 'Failed to add round');
+        console.error(err);
+        return null;
+    }
+  };
+
 const handleAddStep = () => {
   setProofOfConcepts([...proofOfConcepts, { text: "", file: null, preview: null }]);
 };
@@ -245,7 +278,7 @@ const handleFileChange = (index, event) => {
     const payload={
       projectName:data.selectedProjectName,
       projectType:data.ProjectType,
-      round:round,
+      round:data.round,
       vulnerabilityName:data.selectedVulnerability,
       sevirty:data.severity,
       description:data.Description,
@@ -255,7 +288,7 @@ const handleFileChange = (index, event) => {
       references:data.Referance,
       recomendation:data.Recomendation,
       proofOfConcept: formattedProofOfConcept,
-      devices:selectDevice.label,
+      devices:selectDevice?.label || null,
       proof: formattedProofOfConcept.map((item) => item.proof),
     }
     
@@ -273,6 +306,8 @@ const handleFileChange = (index, event) => {
       setValue("severity", null);
       setValue("selectedProjectName", null)
       setValue("Path","")
+      setValue("round",null)
+      setRoundOptions(null)
       setSelectedVulnerability(null);
       setSelectDevice(null);
       setProofOfConcepts([
@@ -280,6 +315,9 @@ const handleFileChange = (index, event) => {
         { text: "", file: null, preview: null },
         { text: "", file: null, preview: null }
       ]);
+      fileInputRefs.current.forEach((input) => {
+        if (input) input.value = "";
+      });
       toast.success('Form submitted successfully!', {
         className: 'custom-toast custom-toast-success',
       });
@@ -309,8 +347,12 @@ const handleFileChange = (index, event) => {
       handleSubmit(handleFormSubmit)();
   };
  
-  const handleround=(e)=>{
-    setRound(e.target.value)
+  const handleround=(selected)=>{
+    if (selected?.isAddOption) {
+      addNewRound();
+    } else {
+      setValue("round",selected.value)
+    }
   }
 
   useEffect(() => {
@@ -381,24 +423,25 @@ const handleFileChange = (index, event) => {
                     />
                   )}
                 />
-
                 {errors.selectedProjectName && <p className="text-danger">{errors.selectedProjectName.message}</p>}
-
               </Form.Group>
                 <Form.Group className="mb-3">
                   <Form.Label className="fs-5 fw-bolder">Round<span className="text-danger">*</span></Form.Label>
-                  <Form.Select
-                    value={round}
-                    onChange={handleround}
-                    required
-                  >
-                    <option value="">Select Round</option>
-                    <option value="1">Round 1</option>
-                    <option value="2">Round 2</option>
-                    <option value="3">Round 3</option>
-                    <option value="4">Round 4</option>
-                    <option value="4">Add Round</option>
-                  </Form.Select>
+                  <Controller
+                    name="round"
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field }) => (
+                      <Select
+                        {...field}
+                        value={roundOptions.find((option) => option.value === field.value)}
+                        options={roundOptions}
+                        placeholder="Select Round"
+                        onChange={handleround}
+                      />
+                    )}
+                  />
+                  {errors.round && <p className="text-danger">{errors.round.message}</p>}
                 </Form.Group>
                 <Form.Group className="mb-3">
                   <Form.Label className="fs-5 fw-bolder">Severity<span className="text-danger">*</span></Form.Label>
@@ -600,7 +643,7 @@ const handleFileChange = (index, event) => {
                       />
                     </div>
                     <div className="col-md-6 mt-3">
-                    <Form.Control type="file"  accept=".jpeg,.jpg" onChange={(e) => handleFileChange(index, e)} />
+                    <Form.Control type="file"  accept=".jpeg,.jpg" onChange={(e) => handleFileChange(index, e)}   ref={(el) => (fileInputRefs.current[index] = el)} />
                     {proof.preview && (
                       <div className="mt-2" style={{ cursor: 'pointer', marginTop: '10px' }}>
                         <h6 variant="primary" onClick={() => setShowPreview(true)}>

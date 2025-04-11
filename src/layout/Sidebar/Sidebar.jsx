@@ -20,6 +20,8 @@ const Sidebar = ({ onToggle }) => {
       navigate("/home");
     } else if (page === "report") {
       navigate("/report");
+    }else if(page === "ReportPdfGenerator"){
+      navigate("/ReportPdfGenerator")
     }
   };
 
@@ -37,15 +39,14 @@ const Sidebar = ({ onToggle }) => {
           <BiSolidReport className="icon" />
           {isExpanded && <span className="label">Report</span>}
         </li>
-        {/* You can uncomment these lines if you want to add Services and Contact pages */}
-        {/* <li className="menu-item" onClick={() => handlePageSelect("services")}>
+        <li className="menu-item" onClick={() => handlePageSelect("ReportPdfGenerator")}>
           <FaBriefcase className="icon" />
-          {isExpanded && <span className="label">Services</span>}
+          {isExpanded && <span className="label">Generate File</span>}
         </li>
-        <li className="menu-item" onClick={() => handlePageSelect("contact")}>
+        {/* <li className="menu-item" onClick={() => handlePageSelect("contact")}>
           <FaPhone className="icon" />
           {isExpanded && <span className="label">Contact</span>}
-        </li> */}
+        </li>  */}
       </ul>
     </div>
   );
