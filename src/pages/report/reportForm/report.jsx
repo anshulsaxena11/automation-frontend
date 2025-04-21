@@ -434,7 +434,7 @@ const handleFileChange = (index, event) => {
                     render={({ field }) => (
                       <Select
                         {...field}
-                        value={roundOptions.find((option) => option.value === field.value)}
+                        value={roundOptions?.find((option) => option.value === field.value)}
                         options={roundOptions}
                         placeholder="Select Round"
                         onChange={handleround}
