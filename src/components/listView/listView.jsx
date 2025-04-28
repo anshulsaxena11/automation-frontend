@@ -1,8 +1,10 @@
 import React from 'react';
-import { Table, Pagination, InputGroup, FormControl, Button } from 'react-bootstrap';
-import { FaPlus } from "react-icons/fa";
-import { IoEyeSharp } from "react-icons/io5";
-import { CiEdit } from "react-icons/ci";
+import { Table, Pagination, InputGroup, FormControl, Button, Spinner } from 'react-bootstrap';
+import { FaPlus, FaCheck, FaEye } from "react-icons/fa";
+import { IoEyeSharp, IoClose } from "react-icons/io5";
+import { CiEdit,CiViewList } from "react-icons/ci";
+import { RiMindMap } from "react-icons/ri";
+import Select from 'react-select';
 
 const ListView = ({ 
   columns, 
@@ -16,91 +18,287 @@ const ListView = ({
   loading, 
   title,
   onAddNewClick,
+  buttonClass,
   buttonName,
   onViewClick,
-  onEditClick
+  onEditClick,
+  showStatusIcon =false,
+  onCheckClick,
+  onCrossClick,
+  showIcon = true,
+  showFilters = false,
+  showFiltersStatus = false,
+  selectedCentre,
+  setSelectedCentre,
+  etpeOptions,
+  selectedEtpe,
+  setSelectedEtpe,
+  centreOptions,
+  centreTittle,
+  StatusName,
+  etpeTypeName,
+  statusOptions,
+  selectedStatus,
+  setSelectedStatus,
+  ProjectFilter = false,
+  projectOptions,
+  selectedProject, 
+  setSelectedProject,
+  projectTittle,
+  showCheckbox = false,
+  onCheckboxChange,
+  showEditView=false,
+  selectedItems,
+  showMapIcon=false,
+  hideHeader,
+  dirOptions,
+  selecteddir,
+  setSelecteddir,
+  dirTittle,
+  buttonClasstwo,
+  onButtonViewClick,
+  buttonNameTwo,
+  showButtonFilter=false,
+  isViewMode
 }) => {
   return (
     <div>
-      <div className="row mb-3">
-        <div className="col-10">
-          <h3>{title}</h3>
+        <div className="row mb-3 align-items-end">
+        <div className={`col-sm-${showFilters && showFiltersStatus ? 2 : (showFilters || showFiltersStatus ? 4 : 10)} col-md-${showFilters && showFiltersStatus ? 2 : (showFilters || showFiltersStatus ? 4 : 10)} col-lg-${showFilters && showFiltersStatus ? 2 : (showFilters || showFiltersStatus ? 4 : 10)}`  }>
+           <h3 className="mb-0">{title}</h3>
         </div>
-        <div className="col-2 ">
-          <InputGroup className="mb-3" style={{ maxWidth: '300px' }}>
+          
+
+        {showFilters && (
+          <>
+         {!hideHeader && (
+          <div className="col-md-2">
+            <Select
+              options={dirOptions}
+              value={selecteddir}
+              onChange={setSelecteddir}
+              placeholder={dirTittle}
+              isClearable
+            />
+          </div>
+         )}
+      
+            {!hideHeader && (
+              <div className="col-md-2">
+                <Select
+                  options={centreOptions}
+                  value={selectedCentre}
+                  onChange={setSelectedCentre}
+                  placeholder={centreTittle}
+                  isClearable
+                />
+              </div>
+            )}
+            {!hideHeader && (
+              <div className="col-md-2">
+                <Select
+                  options={etpeOptions}
+                  value={selectedEtpe}
+                  onChange={setSelectedEtpe}
+                  placeholder={etpeTypeName}
+                  isClearable
+                />
+              </div>
+            )}
+            {showFiltersStatus && (
+            <div className="col-md-2">
+              <Select
+                options={statusOptions}
+                value={selectedStatus}
+                onChange={setSelectedStatus}
+                placeholder={StatusName}
+                isClearable
+              />
+            </div>
+            )}
+          </>
+        )}
+
+        <div className="col-sm-2 col-md-2 col-lg-2">
+        {!hideHeader && (
+          <InputGroup>
             <FormControl
               placeholder="Search..."
               value={searchQuery}
               onChange={onSearchChange}
             />
           </InputGroup>
+        )}
         </div>
       </div>
       <hr></hr>
       <div className='row pb-3'>
-        <div className='col-sm-10 col-md-10 col-lg-10'></div>
+      <div className={`col-sm-${showButtonFilter ? 8 : 10} col-md-${showButtonFilter ? 8 : 10} col-lg-${showButtonFilter ? 8 : 10}`  }>
+            {ProjectFilter && (
+              <>
+              <Select
+                options={projectOptions}
+                value={selectedProject}
+                onChange={setSelectedProject}
+                placeholder={projectTittle}
+                isClearable
+              />
+              </>
+            )}
+        </div>
+        {showButtonFilter && (
+          <div className="col-sm-2 col-md-2 col-lg-2 d-flex justify-content-end">
+            {!hideHeader && (
+              <Button 
+                variant="primary" 
+                className={buttonClasstwo || "btn btn-success"} 
+                onClick={onButtonViewClick} 
+                disabled={loading}
+              >
+                {loading ? (
+                  <Spinner animation="border" size="sm" />
+                ) : (
+                  <>
+                    {isViewMode ? (<CiViewList />) : (<FaEye /> )}
+                    {buttonNameTwo}
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+        )}
+
         <div className='col-sm-2 col-md-2 col-lg-2 d-flex justify-content-end'>
-          <Button variant="primary" className='btn btn-success' onClick={onAddNewClick}>
-            {buttonName} <FaPlus />
-          </Button>
+        {!hideHeader && (
+        <Button variant="primary" className={buttonClass || "btn btn-success"} onClick={onAddNewClick} disabled={loading}>
+          {loading ? (
+            <Spinner animation="border" size="sm" />
+          ) : (
+            <>
+              {showMapIcon && <RiMindMap className='fs-5'/>} {buttonName} {showIcon && <FaPlus />} 
+            </>
+          )}
+        </Button>
+        )}
         </div>
       </div>
 
       <Table striped bordered hover responsive>
-        <thead>
-          <tr>
-            <th>S.No</th> {/* Add a header for serial number */}
-            {columns.map((col, index) => (
-              <th key={index}>{columnNames[col]}</th> // Displaying user-friendly column names
-            ))}
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {loading ? (
-            <tr>
-              <td colSpan={columns.length + 1} className="text-center">
-                Loading...
-              </td>
-            </tr>
-          ) : (
-            data.map((item, index) => (
-              <tr key={index}>
-                <td>{(page - 1) * 10 + index + 1}</td> {/* Serial Number */}
-                {columns.map((col, i) => (
-                  <td key={i}>{item[col] || 'N/A'}</td> // Safely display data or 'N/A' if no data
-                ))}
-                <td>
-                    <IoEyeSharp style={{ cursor: 'pointer' }} 
-                    onClick={() => onViewClick(item)} /> || <CiEdit style={{ cursor: 'pointer'}} onClick={() => onEditClick(item)}/>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </Table>
+      {!hideHeader && (
+  <thead>
+    <tr>
+      <th>S.No</th>
+      {columns.map((col, index) => (
+        <th key={index}>{columnNames[col]}</th>
+      ))}
+      <th>Action</th>
+    </tr>
+  </thead>
+      )}
 
+  <tbody>
+    {loading ? (
+      <tr>
+        <td colSpan={columns.length + 2} className="text-center">
+          Loading...
+        </td>
+      </tr>
+    ) : (
+      data.map((item, index) => (
+        <tr key={item.empid || index}>
+          {/* Serial number */}
+          <td>{(page - 1) * 10 + index + 1}</td>
+
+          {/* Data columns */}
+          {columns.map((col, i) => (
+            <td key={i}>{item[col] || 'N/A'}</td>
+          ))}
+
+          {/* Action column */}
+          <td>
+            {/* ✅ Checkbox (if enabled) */}
+            {showCheckbox && (
+              <input
+                type="checkbox"
+                checked={selectedItems.includes(item._id)}
+                onChange={() => onCheckboxChange(item)}
+                style={{ marginRight: '10px' }}
+              />
+            )}
+
+            {/* ✅ Status icons (if enabled) */}
+            {showStatusIcon && (
+              <>
+                <span className='fs-4' style={{ color: 'green', fontWeight: 'bold' }}>
+                  <FaCheck style={{ cursor: 'pointer' }} onClick={() => onCheckClick(item)} />
+                </span>{' '}
+                ||{' '}
+                <span className='fs-4' style={{ color: 'red', fontWeight: 'bold' }}>
+                  <IoClose style={{ cursor: 'pointer' }} onClick={() => onCrossClick(item)} />
+                </span>
+              </>
+            )}
+
+            {/* ✅ Edit/View buttons (if enabled) */}
+            {showEditView && (
+              <>
+                <IoEyeSharp style={{ cursor: 'pointer' }} onClick={() => onViewClick(item)} /> ||{' '}
+                <CiEdit style={{ cursor: 'pointer' }} onClick={() => onEditClick(item)} />
+              </>
+            )}
+          </td>
+        </tr>
+      ))
+    )}
+  </tbody>
+</Table>
       {/* Pagination */}
       <div className="d-flex justify-content-end mt-3">
+      {!hideHeader && (
         <Pagination className="pagination-sm">
           <Pagination.Prev
             onClick={() => onPageChange(page - 1)}
             disabled={page === 1}
           />
-          {[...Array(totalPages)].map((_, index) => (
+       {(() => {
+        const items = [];
+        const maxPages = 10;
+        let start = Math.max(1, Math.min(page - Math.floor(maxPages / 2), totalPages - maxPages + 1));
+        let end = Math.min(totalPages, start + maxPages - 1);
+
+        for (let i = start; i <= end; i++) {
+          items.push(
             <Pagination.Item
-              key={index + 1}
-              active={index + 1 === page}
-              onClick={() => onPageChange(index + 1)}
+              key={i}
+              active={i === page}
+              onClick={() => onPageChange(i)}
             >
-              {index + 1}
+              {i}
             </Pagination.Item>
-          ))}
+          );
+        }
+
+        if (end < totalPages) {
+          items.push(<Pagination.Ellipsis key="end-ellipsis" disabled />);
+          items.push(
+            <Pagination.Item
+              key={totalPages}
+              active={page === totalPages}
+              onClick={() => onPageChange(totalPages)}
+            >
+              {totalPages}
+            </Pagination.Item>
+          );
+        }
+
+        return items;
+      })()}
           <Pagination.Next
             onClick={() => onPageChange(page + 1)}
             disabled={page === totalPages}
           />
         </Pagination>
+      )}
       </div>
     </div>
   );

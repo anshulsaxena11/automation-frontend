@@ -514,8 +514,8 @@ const HomePage = () => {
                   />
                   {errors.ProjectName && <p className="text-danger">{errors.ProjectName.message}</p>}
                 </Form.Group>
-                <div className="row">
-                  <div className="col-sm-10 col-md-10 col-lg-10">
+                {/* <div className="row"> */}
+                  {/* <div className="col-sm-10 col-md-10 col-lg-10"> */}
                     <Form.Group className="mb-3" >
                       <Form.Label className="fs-5 fw-bolder">Scope Of Work<span className="text-danger">*</span></Form.Label>
                       {projectTypes && Array.isArray(projectTypes) && projectTypes.length > 0 ? (
@@ -541,14 +541,14 @@ const HomePage = () => {
                       <div className="text-danger">{errors.selectedProjectTypes.message}</div>
                     )}
                     </Form.Group>
-                  </div>
-                  <div className="col-sm-2 col-md-2 col-lg-2">
+                  {/* </div> */}
+                  {/* <div className="col-sm-2 col-md-2 col-lg-2">
                     <Button variant="success" className="button-middle" onClick={handleShow}><IoMdAdd className="fs-3" /></Button>
-                  </div>
-                </div>
+                  </div> */}
+                {/* </div> */}
                 <Form.Group className="mb-3" controlId="directrate">
-                  <div className="row">
-                    <div className='col-sm-10 col-md-10 col-lg-10'>
+                  {/* <div className="row">
+                    <div className='col-sm-10 col-md-10 col-lg-10'> */}
                       <Form.Label className="fs-5 fw-bolder">Directorates<span className="text-danger">*</span></Form.Label>
                       <Controller
                         name="DirectrateName"
@@ -566,11 +566,11 @@ const HomePage = () => {
                         )}
                       />
                       {errors.DirectrateName && <p className="text-danger">{errors.DirectrateName.message}</p>}
-                    </div>
-                  <div className="col-sm-2 col-md-2 col-lg-2">
+                    {/* </div> */}
+                  {/* <div className="col-sm-2 col-md-2 col-lg-2">
                     <Button variant="success" className="button-middle" onClick={handledirectrateshow}><IoMdAdd className="fs-3" /></Button>
                   </div>
-                  </div>
+                  </div> */}
                 </Form.Group>
                 <Form.Group className="mt-3">
                 <Form.Label className="fs-5 fw-bolder">Work Order<span className="text-danger">*</span></Form.Label>

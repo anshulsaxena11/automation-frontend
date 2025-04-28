@@ -99,6 +99,7 @@ const ProjectDetailsList = () => {
         loading={loading}
         onViewClick={handleViewClick}
         onEditClick={handleEditClick}
+        showEditView={true}
       />
     </div>
   );

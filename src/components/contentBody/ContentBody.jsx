@@ -10,6 +10,8 @@ import ProjectDetailsView from "../../pages/projectDetails/projectDetailView/pro
 import ProjectDetailsEdit from "../../pages/projectDetails/projectDetailsEdit/projectDetailsEdit.jsx"
 import VaptLoader from "../../components/loader/loader.jsx";
 import ReportPdfGenerator from "../../pages/ReportPdfGenerator/ReportPdfGenerator.js"
+import AdminSyncEmploy from "../../pages/adminEmp/adminEmp.jsx"
+import ProjectMapping from "../../pages/ProjectMapping/ProjectMapping.js"
 import './contentBody.css'
 
 const ContentBody = ({ isSidebarExpanded }) => {
@@ -44,6 +46,8 @@ const ContentBody = ({ isSidebarExpanded }) => {
           <Route path="/newReportView/:id" element={<ReportView />} />
           <Route path="/editReport/:id" element={<EditReportForm />} />
           <Route path ="/ReportPdfGenerator" element={<ReportPdfGenerator/>}/>
+          <Route path ="/admin-Emp" element={<AdminSyncEmploy/>}/>
+          <Route path ="/user-Emp" element={<ProjectMapping/>}/>
         </Routes>
       </div>
     </div>

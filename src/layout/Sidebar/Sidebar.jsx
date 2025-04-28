@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import { FaBars, FaHome, FaInfoCircle, FaBriefcase, FaPhone } from "react-icons/fa";
+import { FaBars, FaHome, FaSitemap  } from "react-icons/fa";
+import { TbReportAnalytics } from "react-icons/tb";
+import { RiAdminFill } from "react-icons/ri";
 import { BiSolidReport } from "react-icons/bi";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom"; 
 import "./Sidebar.css";
 
 const Sidebar = ({ onToggle }) => {
@@ -15,13 +17,16 @@ const Sidebar = ({ onToggle }) => {
   };
 
   const handlePageSelect = (page) => {
-    // Use navigate to change the route
     if (page === "ProjectDetailsList") {
       navigate("/home");
     } else if (page === "report") {
       navigate("/report");
     }else if(page === "ReportPdfGenerator"){
       navigate("/ReportPdfGenerator")
+    }else if(page === "adminEmp"){
+      navigate("/admin-Emp")
+    }else if(page==="projectMapping"){
+      navigate("/user-Emp")
     }
   };
 
@@ -40,13 +45,17 @@ const Sidebar = ({ onToggle }) => {
           {isExpanded && <span className="label">Report</span>}
         </li>
         <li className="menu-item" onClick={() => handlePageSelect("ReportPdfGenerator")}>
-          <FaBriefcase className="icon" />
+          <TbReportAnalytics className="icon" />
           {isExpanded && <span className="label">Generate File</span>}
         </li>
-        {/* <li className="menu-item" onClick={() => handlePageSelect("contact")}>
-          <FaPhone className="icon" />
-          {isExpanded && <span className="label">Contact</span>}
-        </li>  */}
+        <li className="menu-item" onClick={() => handlePageSelect("adminEmp")}>
+          <RiAdminFill className="icon" />
+          {isExpanded && <span className="label">Admin Portal</span>}
+        </li> 
+        <li className="menu-item" onClick={() => handlePageSelect("projectMapping")}>
+          <FaSitemap  className="icon" />
+          {isExpanded && <span className="label">Project Mapping</span>}
+        </li>
       </ul>
     </div>
   );

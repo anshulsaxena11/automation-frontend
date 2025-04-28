@@ -99,6 +99,7 @@ const ReportList = () => {
         loading={loading}
         onViewClick={handleViewClick}
         onEditClick={handleEditClick}
+        showEditView={true}
       />
     </div>
   );
