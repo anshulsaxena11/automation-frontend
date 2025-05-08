@@ -169,21 +169,21 @@ const ReportPdfGenerator = () => {
     <Box className="tabs-container">
       {/* Tabs */}
     <Tabs
-  value={value}
-  indicatorColor="primary"
-  textColor="primary"
-  onChange={(event, newValue) => {
-    if (newValue === 1 && !isSectionBEnabled) return;
-    if (newValue === 2 && !isSectionBEnabledTwo) return;
-    if (newValue === 3 && !isSectionBEnabledThree) return;
-    setValue(newValue);
-  }}
->
-  <Tab label="Section A" className="tab-text" />
-  <Tab label="Section B" className="tab-text" />
-  <Tab label="Section C" className="tab-text" />
-  <Tab label="Section D" className="tab-text" />
-</Tabs>
+        value={value}
+        indicatorColor="primary"
+        textColor="primary"
+        onChange={(event, newValue) => {
+          if (newValue === 1 && !isSectionBEnabled) return;
+          if (newValue === 2 && !isSectionBEnabledTwo) return;
+          if (newValue === 3 && !isSectionBEnabledThree) return;
+          setValue(newValue);
+        }}
+    >
+    <Tab label="Section A" className="tab-text" />
+    <Tab label="Section B" className="tab-text" />
+    <Tab label="Section C" className="tab-text" />
+    <Tab label="Section D" className="tab-text" />
+    </Tabs>
 
       {/* Tab Panels */}
       <Box className="tab-panel">

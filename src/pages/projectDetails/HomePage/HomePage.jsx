@@ -130,7 +130,6 @@ const HomePage = () => {
  
     setLoading(true);
     try{
-      console.log(payload)
       const response = await postPerseonlData(payload);
       if (response.statusCode === 200) {
         reset({

@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { FaBars, FaHome, FaSitemap  } from "react-icons/fa";
+import { FaBars, FaHome, FaSitemap, FaTools } from "react-icons/fa";
 import { TbReportAnalytics } from "react-icons/tb";
 import { RiAdminFill } from "react-icons/ri";
 import { BiSolidReport } from "react-icons/bi";
 import { useNavigate } from "react-router-dom"; 
+import { GiSkills } from "react-icons/gi";
+import { IoHardwareChipOutline } from "react-icons/io5";
 import "./Sidebar.css";
 
 const Sidebar = ({ onToggle }) => {
@@ -27,7 +29,14 @@ const Sidebar = ({ onToggle }) => {
       navigate("/admin-Emp")
     }else if(page==="projectMapping"){
       navigate("/user-Emp")
+    }else if(page==="SkillMapping"){
+      navigate("/skills-Mapping")
+    } else if(page ==="ToolsAndHardwareMapping"){
+      navigate("/Tools-Hardware-Master-List")
+    }else if(page ==="ToolsHradwareList"){
+      navigate("/Tools-Hardware-list")
     }
+   
   };
 
   return (
@@ -55,6 +64,18 @@ const Sidebar = ({ onToggle }) => {
         <li className="menu-item" onClick={() => handlePageSelect("projectMapping")}>
           <FaSitemap  className="icon" />
           {isExpanded && <span className="label">Project Mapping</span>}
+        </li>
+        <li className="menu-item" onClick={() => handlePageSelect("SkillMapping")}>
+          <GiSkills  className="icon" />
+          {isExpanded && <span className="label">Skill Mapping</span>}
+        </li>
+        <li className="menu-item" onClick={() => handlePageSelect("ToolsAndHardwareMapping")}>
+          <IoHardwareChipOutline    className="icon" />
+          {isExpanded && <span className="label">Tools/Hardware Master</span>}
+        </li>
+        <li className="menu-item" onClick={() => handlePageSelect("ToolsHradwareList")}>
+          <FaTools   className="icon" />
+          {isExpanded && <span className="label">Tools/Hardware Mapping</span>}
         </li>
       </ul>
     </div>

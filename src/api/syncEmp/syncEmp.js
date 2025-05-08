@@ -6,5 +6,6 @@ export const updateEmpStatus = async(payload) => axiosInstance.put('/admin/empLi
 export const centreList = async() => axiosInstance.get('/admin/stpiCentre')
 export const srpiEmpTypeList = async() => axiosInstance.get('/admin/srpiEmpType')
 export const srpiEmpTypeListActive = async({ page = 1, limit = 10, search =" " ,centre="",etpe=" ",dir="",projectId=""} = {}) => axiosInstance.get('/user/stpiEmp', { params: { page, limit, search,centre,etpe,projectId,dir } }).then(response => response.data);
-export const resourseMapping = async(payload) => axiosInstance.post('user/project-mapping', payload)
+export const resourseMapping = async(payload) => axiosInstance.post('/user/project-mapping', payload)
 export const directoratesList = async() => axiosInstance.get('/admin/stpiDirectorates')
+export const skillsMapping = async(payload) => axiosInstance.post('/user/skills', payload)

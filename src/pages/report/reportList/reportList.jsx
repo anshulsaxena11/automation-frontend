@@ -100,6 +100,7 @@ const ReportList = () => {
         onViewClick={handleViewClick}
         onEditClick={handleEditClick}
         showEditView={true}
+        
       />
     </div>
   );

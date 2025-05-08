@@ -9,9 +9,18 @@ import ReportView from "../../pages/report/reportView/reportView.jsx"
 import ProjectDetailsView from "../../pages/projectDetails/projectDetailView/projectDetailsView.jsx"
 import ProjectDetailsEdit from "../../pages/projectDetails/projectDetailsEdit/projectDetailsEdit.jsx"
 import VaptLoader from "../../components/loader/loader.jsx";
-import ReportPdfGenerator from "../../pages/ReportPdfGenerator/ReportPdfGenerator.js"
+import ReportPdfGenerator from "../../pages/ReportPdfGenerator/ReportPdfGenerator.jsx"
 import AdminSyncEmploy from "../../pages/adminEmp/adminEmp.jsx"
-import ProjectMapping from "../../pages/ProjectMapping/ProjectMapping.js"
+import ProjectMapping from "../../pages/ProjectMapping/ProjectMapping.jsx"
+import SkillMapping from "../../pages/skillMapping/SkillMappimg.jsx"
+import ToolsAndHardware from "../../pages/toolsandHardware/ToolsAndHardwareEntry/ToolsAndHardware.jsx"
+import ToolsAndHardwareMapping from "../../pages/ToolsandHardwareMaster/ToolsAndHardwatreMasterEntry/ToolsAnsHardwareMater.jsx"
+import ToolsAndHardwareMappingList from "../../pages/ToolsandHardwareMaster/toolsAndHardwareList/ToolsAndHardwareList.jsx"
+import ToolsAndHardwareMappingEdit from '../../pages/ToolsandHardwareMaster/ToolsAndHardwareEdit/ToolsAndHardwareEdit.jsx'
+import ToolsAndHardwareMappingView from '../../pages/ToolsandHardwareMaster/TooolsAndHardwareView/ToolsAndHardwareView.jsx'
+import ToolsAndHardwarelist from'../../pages/toolsandHardware/ToolsAndHardwareList/ToolsAndHardwareList.jsx'
+import ToolsAndHardwareEdit from '../../pages/toolsandHardware/ToolsAndHardwareEdit/ToolsAndHardwareEdit.jsx'
+import ToolsAndHardwareView from '../../pages/toolsandHardware/toolsAndHardwareView/TollAndHardwareView.jsx'
 import './contentBody.css'
 
 const ContentBody = ({ isSidebarExpanded }) => {
@@ -48,6 +57,15 @@ const ContentBody = ({ isSidebarExpanded }) => {
           <Route path ="/ReportPdfGenerator" element={<ReportPdfGenerator/>}/>
           <Route path ="/admin-Emp" element={<AdminSyncEmploy/>}/>
           <Route path ="/user-Emp" element={<ProjectMapping/>}/>
+          <Route path ="/skills-Mapping" element={<SkillMapping/>}/>
+          <Route path="/Tools-Hardware" element={<ToolsAndHardware/>}/>
+          <Route path="/Tools-Hardware-list" element={<ToolsAndHardwarelist/>}/>
+          <Route path="/Tools-Hardware-Edit/:id" element={<ToolsAndHardwareEdit/>}/>         
+          <Route path="/Tools-Hardware-Master" element={<ToolsAndHardwareMapping/>}/>
+          <Route path="/Tools-Hardware-Master-List" element={<ToolsAndHardwareMappingList/>}/>
+          <Route path="/Tools-Hardware-Master-Edit/:id" element={<ToolsAndHardwareMappingEdit/>}/>
+          <Route path="/Tools-Hardware-Master-View/:id" element={<ToolsAndHardwareMappingView/>}/>
+          <Route path='/Tools-Hardware-View/:id' element={<ToolsAndHardwareView/>}/>
         </Routes>
       </div>
     </div>

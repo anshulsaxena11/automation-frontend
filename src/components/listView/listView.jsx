@@ -59,18 +59,26 @@ const ListView = ({
   onButtonViewClick,
   buttonNameTwo,
   showButtonFilter=false,
-  isViewMode
+  isViewMode,
+  handleTableInput,
+  projectTypes,
+  showbuttonSubmit=false,
+  buttonClassthree,
+  onButtonThree,
+  showFiltersTwo=false
 }) => {
   return (
     <div>
         <div className="row mb-3 align-items-end">
-        <div className={`col-sm-${showFilters && showFiltersStatus ? 2 : (showFilters || showFiltersStatus ? 4 : 10)} col-md-${showFilters && showFiltersStatus ? 2 : (showFilters || showFiltersStatus ? 4 : 10)} col-lg-${showFilters && showFiltersStatus ? 2 : (showFilters || showFiltersStatus ? 4 : 10)}`  }>
+        <div className={`col-sm-${showFilters && showFiltersStatus && showFiltersTwo ? 8 : (showFilters && showFiltersStatus ? 2 : (showFilters || showFiltersStatus ? 4 : 10))} col-md-${showFilters && showFiltersStatus && showFiltersTwo ? 8 : (showFilters && showFiltersStatus ? 2 : (showFilters || showFiltersStatus ? 4 : 10))} col-lg-${showFilters && showFiltersStatus && showFiltersTwo ? 8 : (showFilters && showFiltersStatus ? 2 : (showFilters || showFiltersStatus ? 4 : 10))}`  }>
            <h3 className="mb-0">{title}</h3>
         </div>
           
 
         {showFilters && (
           <>
+          {!showFiltersTwo && (
+            <>
          {!hideHeader && (
           <div className="col-md-2">
             <Select
@@ -105,6 +113,8 @@ const ListView = ({
                 />
               </div>
             )}
+            </>
+          )}
             {showFiltersStatus && (
             <div className="col-md-2">
               <Select
@@ -118,6 +128,8 @@ const ListView = ({
             )}
           </>
         )}
+
+  
 
         <div className="col-sm-2 col-md-2 col-lg-2">
         {!hideHeader && (
@@ -182,76 +194,108 @@ const ListView = ({
         )}
         </div>
       </div>
-
+      <div style={{  overflowX: 'auto' }}>
       <Table striped bordered hover responsive>
       {!hideHeader && (
-  <thead>
-    <tr>
-      <th>S.No</th>
-      {columns.map((col, index) => (
-        <th key={index}>{columnNames[col]}</th>
-      ))}
-      <th>Action</th>
-    </tr>
-  </thead>
-      )}
-
-  <tbody>
-    {loading ? (
-      <tr>
-        <td colSpan={columns.length + 2} className="text-center">
-          Loading...
-        </td>
-      </tr>
-    ) : (
-      data.map((item, index) => (
-        <tr key={item.empid || index}>
-          {/* Serial number */}
-          <td>{(page - 1) * 10 + index + 1}</td>
-
-          {/* Data columns */}
-          {columns.map((col, i) => (
-            <td key={i}>{item[col] || 'N/A'}</td>
-          ))}
-
-          {/* Action column */}
-          <td>
-            {/* ✅ Checkbox (if enabled) */}
-            {showCheckbox && (
-              <input
-                type="checkbox"
-                checked={selectedItems.includes(item._id)}
-                onChange={() => onCheckboxChange(item)}
-                style={{ marginRight: '10px' }}
-              />
+        <thead>
+          <tr>
+            <th>S.No</th>
+            {columns.map((col, index) => (
+              <th key={index}>{columnNames[col]}</th>
+            ))}
+            <th>Action</th>
+          </tr>
+        </thead>
             )}
 
-            {/* ✅ Status icons (if enabled) */}
-            {showStatusIcon && (
-              <>
-                <span className='fs-4' style={{ color: 'green', fontWeight: 'bold' }}>
-                  <FaCheck style={{ cursor: 'pointer' }} onClick={() => onCheckClick(item)} />
-                </span>{' '}
-                ||{' '}
-                <span className='fs-4' style={{ color: 'red', fontWeight: 'bold' }}>
-                  <IoClose style={{ cursor: 'pointer' }} onClick={() => onCrossClick(item)} />
-                </span>
-              </>
-            )}
+        <tbody>
+          {loading ? (
+            <tr>
+              <td colSpan={columns.length + 2} className="text-center">
+                Loading...
+              </td>
+            </tr>
+          ) : (
+            data.map((item, index) => (
+              <tr key={item.empid || index}>
+                {/* Serial number */}
+                <td>{(page - 1) * 10 + index + 1}</td>
 
-            {/* ✅ Edit/View buttons (if enabled) */}
-            {showEditView && (
-              <>
-                <IoEyeSharp style={{ cursor: 'pointer' }} onClick={() => onViewClick(item)} /> ||{' '}
-                <CiEdit style={{ cursor: 'pointer' }} onClick={() => onEditClick(item)} />
-              </>
-            )}
-          </td>
-        </tr>
-      ))
-    )}
-  </tbody>
-</Table>
+                {/* Data columns */}
+                    {columns.map((col, i) => (
+                      <td key={i}>
+                       {Array.isArray(projectTypes) && projectTypes.map(pt => pt._id).includes(col) ? (   // <-- correct check
+                          <Select
+                            options={projectOptions} 
+                            value={item[col]} 
+                            onChange={(selectedOption) => handleTableInput(selectedOption, col, i, item)}
+                            isClearable
+                            styles={{
+                              container: (provided) => ({
+                                ...provided,
+                                width: 124, 
+                              }),
+                            }}
+                          />
+                        ) : (
+                          item[col] || 'N/A'
+                        )}
+                      </td>
+                    ))}
+
+                {/* Action column */}
+                <td>
+                  {/* ✅ Checkbox (if enabled) */}
+                  {showCheckbox && (
+                    <input
+                      type="checkbox"
+                      checked={selectedItems.includes(item._id)}
+                      onChange={() => onCheckboxChange(item)}
+                      style={{ marginRight: '10px' }}
+                    />
+                  )}
+
+                  {/* ✅ Status icons (if enabled) */}
+                  {showStatusIcon && (
+                    <>
+                      <span className='fs-4' style={{ color: 'green', fontWeight: 'bold' }}>
+                        <FaCheck style={{ cursor: 'pointer' }} onClick={() => onCheckClick(item)} />
+                      </span>{' '}
+                      ||{' '}
+                      <span className='fs-4' style={{ color: 'red', fontWeight: 'bold' }}>
+                        <IoClose style={{ cursor: 'pointer' }} onClick={() => onCrossClick(item)} />
+                      </span>
+                    </>
+                  )}
+
+                  {showbuttonSubmit && (
+                    <>
+                      <Button
+                        variant="primary" 
+                        className={buttonClassthree} 
+                        onClick={onButtonThree} 
+                        disabled={loading}
+                      >
+                        submit
+                        </Button>
+                      
+                    </>
+                  )}
+
+                  {/* ✅ Edit/View buttons (if enabled) */}
+                  {showEditView && (
+                    <>
+                      <IoEyeSharp style={{ cursor: 'pointer' }} onClick={() => onViewClick(item)} /> ||{' '}
+                      <CiEdit style={{ cursor: 'pointer' }} onClick={() => onEditClick(item)} />
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </Table>
+      </div>
       {/* Pagination */}
       <div className="d-flex justify-content-end mt-3">
       {!hideHeader && (
