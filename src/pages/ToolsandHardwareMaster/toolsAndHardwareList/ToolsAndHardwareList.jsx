@@ -42,7 +42,6 @@ const ToolsAndHardwareList = () =>{
                 limit: 10,
                 page:1,
               });
-              console.log(response)
              
         
               setData(response.data);

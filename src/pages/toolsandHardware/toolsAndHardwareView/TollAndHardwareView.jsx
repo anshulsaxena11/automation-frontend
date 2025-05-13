@@ -30,7 +30,6 @@ const ToolsAndHardwareView = ({ID}) => {
                     try {
                         const response = await putToolsAndHardware(projectId, {});
                         const fetchedData = response?.data?.projectDetails;
-                        console.log(fetchedData)
                         if (fetchedData) {
                             const formattedStartDate = fetchedData.startDate
                             ? fetchedData.startDate.split("T")[0]
@@ -90,12 +89,7 @@ const ToolsAndHardwareView = ({ID}) => {
                 } finally {
                     setLoading(false);
                 }
-            };
-
-
-
-
-        
+            };        
     return(
         <div>
            <ToastContainer  position="top-center" autoClose={5000} hideProgressBar={false} />
@@ -121,7 +115,7 @@ const ToolsAndHardwareView = ({ID}) => {
                                 />
                             </Form.Group>
                             <Form.Group>
-                                <Form.Label className="fs-5 fw-bolder">Assigned Directorates<span className="text-danger">*</span></Form.Label>
+                                <Form.Label className="fs-5 fw-bolder pt-3">Assigned Directorates<span className="text-danger">*</span></Form.Label>
                                 <Form.Control
                                     type="text" 
                                     readOnly
@@ -139,11 +133,11 @@ const ToolsAndHardwareView = ({ID}) => {
                                 />
                             </Form.Group>
                             <Form.Group>
-                                <Form.Label className="fs-5 fw-bolder">Purchased Order<span className="text-danger">*</span></Form.Label>
+                                <Form.Label className="fs-5 fw-bolder pt-3">Purchased Order<span className="text-danger">*</span></Form.Label>
                                 <Form.Control
                                     type="text" 
                                     readOnly
-                                    {...register("purchasedOrder")} 
+                                    {...register("assignedTo")} 
                                 />
                             </Form.Group>
                         </div>
@@ -155,7 +149,7 @@ const ToolsAndHardwareView = ({ID}) => {
                                         <Form.Control
                                             type="text"
                                             readOnly 
-                                            {...register("startDate ")} 
+                                            {...register("startDate")} 
                                         />
                                     </Form.Group>
                                 </div>
@@ -169,10 +163,18 @@ const ToolsAndHardwareView = ({ID}) => {
                                     />
                                     </Form.Group>
                                 </div>
+                                <Form.Group>
+                                <Form.Label className="fs-5 fw-bolder">Purchased Order<span className="text-danger">*</span></Form.Label>
+                                    <Form.Control
+                                        type="text" 
+                                        readOnly
+                                        {...register("purchasedOrder")} 
+                                    />
+                                </Form.Group>
                             </div>
                         </div>
                             <Form.Group>
-                                <Form.Label className="fs-5 fw-bolder">Description<span className="text-danger">*</span></Form.Label>
+                                <Form.Label className="fs-5 fw-bolder pt-3">Description<span className="text-danger">*</span></Form.Label>
                                     <Form.Control
                                     type="text" 
                                     readOnly

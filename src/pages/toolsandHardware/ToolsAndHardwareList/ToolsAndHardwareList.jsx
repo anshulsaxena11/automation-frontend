@@ -17,21 +17,23 @@ const ToolsAndHardware = () =>{
         const navigate = useNavigate();
 
         const columns = [
+            'purchasedOrder',
             'tollsName',
             'quantity',
+            'assignedTo',
+            'directorates',
             'startDate',
             'endDate',
-            'directorates',
-            'purchasedOrder',
         ];
 
         const columnNames = {
+            purchasedOrder:"Purchased Order",
             tollsName: 'Tools Name',
             quantity: 'Quantity',
+            assignedTo: 'Assigne To',
             startDate: 'Start Date',
             endDate:'End Date',
             directorates:"Directorates",
-            purchasedOrder:"Purchased Order"
         };
         
         useEffect(() => {
@@ -65,7 +67,7 @@ const ToolsAndHardware = () =>{
                 search: searchQuery.trim(),
                 directorates:selectedDir?.value, 
                 limit: 10,
-                page:1,
+                page: 1,
               });
              
               const formattedData = response.data.map(item => ({

@@ -232,6 +232,10 @@ const ProjectMapping = () =>{
       const handleSet = () => {
         setIsViewMode(false); 
       };
+
+      const handlePageChange = (newPage) => {
+        setPage(newPage);
+    };
     
     return(        
         <div className='projectMapping'>
@@ -247,6 +251,7 @@ const ProjectMapping = () =>{
                 onSearchChange={handleSearchChange} 
                 loading={loader}
                 ProjectFilter={true}
+                onPageChange={handlePageChange}
                 projectOptions={ProjectName}
                 selectedProject={selectedProject}
                 setSelectedProject={setSelectedProject}

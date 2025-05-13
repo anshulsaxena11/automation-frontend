@@ -7,7 +7,7 @@ import { editToolsAndHardware } from "../../../api/toolsAndHardware/toolsAndHard
 import { TiArrowBack } from "react-icons/ti";
 
 const ToolsAndHardwareMappingView = ({ID}) => {
-        const { register, handleSubmit, setValue, reset, getValues } = useForm();
+        const { register, setValue, reset,  } = useForm();
         const { id } = useParams();
         const projectId = ID || id;
         const navigate = useNavigate();
@@ -20,7 +20,6 @@ const ToolsAndHardwareMappingView = ({ID}) => {
                     try {
                         const response = await editToolsAndHardware(projectId, {});
                         const fetchedData = response?.data?.projectDetails;
-                        console.log(fetchedData)
                         if (fetchedData) {
                             reset({
                                 ...fetchedData,

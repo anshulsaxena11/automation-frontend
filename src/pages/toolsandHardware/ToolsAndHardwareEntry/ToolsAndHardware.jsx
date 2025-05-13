@@ -11,7 +11,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { Button, Spinner } from 'react-bootstrap'; 
 import { ToastContainer, toast } from 'react-toastify';
 import {getToolsAndHardwareMappping, postToolsAndHardware} from "../../../api/toolsAndHardware/toolsAndHardware"
-import { directoratesList } from '../../../api/syncEmp/syncEmp'
+import { directoratesList, srpiEmpTypeListActive } from '../../../api/syncEmp/syncEmp'
 import DatePicker from "react-datepicker";
 import toolsAndHardwareValidation from '../../../validation/toolsAndHardware'
 
@@ -20,6 +20,8 @@ const ToolsAndHardware = () => {
   const [data,setData] = useState([])
   const [selectedTool, setSelectedTool] = useState(null);
   const [selectedDir, setSelectedDir] = useState(null);
+  const [selectedEmp, setSelectedEmp] = useState(null);
+  const [empData,setEmpData] = useState([])
   const [toolsData, setToolsDatas] = useState([]);
   const [dirOptions, setDirOptions] = useState([]);
   const { control, handleSubmit, formState: { errors }, setValue, reset } = useForm({
@@ -62,11 +64,39 @@ const ToolsAndHardware = () => {
   };
 
   const handleTools = (SelectedOption) =>{
-    console.log(SelectedOption)
     const selectedValue = SelectedOption?.label
     setSelectedTool(SelectedOption)
     setValue('tollsName',selectedValue)
   }
+
+  useEffect(() => {
+    fetchEmpList();
+}, [selectedDir]);
+
+
+  const fetchEmpList = async() =>{
+    setLoading(true);
+    try{
+      if(selectedDir){
+        const response = await srpiEmpTypeListActive()
+        if (response && response.dropData) {
+          const options = response.dropData
+          .filter((dir) => dir.dir === selectedDir.value)
+          .map((dir) => ({
+            value: dir.ename,
+            label: dir.ename,
+          }));
+          setEmpData(options);
+        }
+       } else {
+          setEmpData([]);
+        }
+      
+        }catch(error){
+            console.error('Failed to fetch employee list:', error);
+        }
+        setLoading(false);  
+    } 
 
   useEffect(() => {
     const fetchDiretoratesData = async () => {
@@ -87,51 +117,58 @@ const ToolsAndHardware = () => {
     fetchDiretoratesData();
   }, []);
 
-    const handleDir = (SelectedOption)=>{
-      setSelectedDir(SelectedOption)
-      setValue('directorates',SelectedOption?.label)
-    }
+  const handeleEmp = (Selected) =>{
+    setSelectedEmp(Selected)
+    setValue('assignedTo',Selected?.label)
+  }
 
-       const handleFormdataSubmit = async (data) => {
-        console.log('data reached here',data)
-         setLoading(true)
-         try{
-         const payload={
-            tollsName:data.tollsName,
-            startDate: data.startDate, 
-            endDate: data.endDate,
-            directorates:data.directorates,
-            purchasedOrder:data.purchasedOrder,
-            description:data.description,
-            quantity:data.quantity
-         }
-         console.log("payload data is",payload)
-             const response = await postToolsAndHardware(payload);
-             if(response.data.statusCode === 200){
-                reset({
-                  tollsName:'',
-                  quantity:'',
-                  startDate: null,
-                  endDate: null,
-                  directorates:'',
-                  purchasedOrder:'',
-                  description:''
-                })
-                setSelectedTool(null)
-                setSelectedDir(null)
-                toast.success('Form submitted successfully!', {
-                    className: 'custom-toast custom-toast-success',
-                });
-             }else if(response.data.statuscode === 400 && response.message.includes("Tools And Hardware already exist")){
-                 toast.error(response.message, {
-                     className: "custom-toast custom-toast-error",
-                 });
-             }
-         }catch(error){
-          console.log(error)
-         }
-         setLoading(false);
-       }
+  const handleDir = (SelectedOption)=>{
+    setSelectedDir(SelectedOption)
+    setSelectedEmp("")
+    setValue('directorates',SelectedOption?.label)
+  }
+
+    const handleFormdataSubmit = async (data) => {
+    console.log('data reached here',data)
+      setLoading(true)
+      try{
+      const payload={
+        tollsName:data.tollsName,
+        startDate: data.startDate, 
+        endDate: data.endDate,
+        assignedTo:data.assignedTo,
+        directorates:data.directorates,
+        purchasedOrder:data.purchasedOrder,
+        description:data.description,
+        quantity:data.quantity
+      }
+      console.log("payload data is",payload)
+          const response = await postToolsAndHardware(payload);
+          if(response.data.statusCode === 200){
+            reset({
+              tollsName:'',
+              quantity:'',
+              startDate: null,
+              endDate: null,
+              directorates:'',
+              purchasedOrder:'',
+              description:''
+            })
+            setSelectedTool(null)
+            setSelectedDir(null)
+            toast.success('Form submitted successfully!', {
+                className: 'custom-toast custom-toast-success',
+            });
+          }else if(response.data.statuscode === 400 && response.message.includes("Tools And Hardware already exist")){
+              toast.error(response.message, {
+                  className: "custom-toast custom-toast-error",
+              });
+          }
+      }catch(error){
+      console.log(error)
+      }
+      setLoading(false);
+    }
   return(
     <div className='container-fluid'>
         <ToastContainer  position="top-center" autoClose={5000} hideProgressBar={false} />
@@ -200,12 +237,22 @@ const ToolsAndHardware = () => {
                       {errors.quantity && <p className="text-danger">{errors.quantity.message}</p>}
                   </Form.Group>
                   <Form.Group className="mb-3">
-                  <Form.Label className="fs-5 fw-bolder">Purchased Order<span className="text-danger">*</span></Form.Label>
-                    <Controller
-                        name="purchasedOrder"
-                        control={control}
-                        render={({ field }) => <input {...field} className="form-control"  placeholder="Enter Purchased Order"/>}
-                    />
+                  <Form.Label className="fs-5 fw-bolder">Assigned Officer<span className="text-danger">*</span></Form.Label>
+                  <Controller
+                          name="assignedTo"
+                          control={control}
+                          render={({ field }) => (
+                          <Select
+                              {...field}
+                              options={empData} 
+                              value={selectedEmp}
+                              isClearable
+                              isDisabled={loading}
+                              placeholder="Select Assigned Officer"
+                              onChange={handeleEmp}
+                              />
+                          )}
+                      />
                       {errors.purchasedOrder && <p className="text-danger">{errors.quantity.message}</p>}
                   </Form.Group>
                 </div>
@@ -233,6 +280,15 @@ const ToolsAndHardware = () => {
                         {errors.endDate && <p className="text-danger">{errors.endDate.message}</p>}
                       </Form.Group>
                     </div>
+                       <Form.Group className="mb-3">
+                        <Form.Label className="fs-5 fw-bolder">Purchased Order<span className="text-danger">*</span></Form.Label>
+                          <Controller
+                              name="purchasedOrder"
+                              control={control}
+                              render={({ field }) => <input {...field} className="form-control"  placeholder="Enter Purchased Order"/>}
+                          />
+                            {errors.purchasedOrder && <p className="text-danger">{errors.quantity.message}</p>}
+                        </Form.Group>
                   </div>
               </div>
             </div>

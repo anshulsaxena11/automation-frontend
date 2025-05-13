@@ -15,7 +15,7 @@ import { useNavigate } from 'react-router-dom';
 
 
 const ToolsAndHardwareMapping = () =>{
-    const { control, handleSubmit, formState: { errors }, setValue,reset } = useForm({
+    const { control, handleSubmit, formState: { errors },reset } = useForm({
         resolver: yupResolver(toolsAndHardwareMasterValidation),
         defaultValues: {},
       });

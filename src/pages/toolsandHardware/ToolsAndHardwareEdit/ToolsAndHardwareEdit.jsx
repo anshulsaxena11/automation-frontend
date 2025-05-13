@@ -6,7 +6,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
 import { putToolsAndHardware, getToolsAndHardwareMappping } from "../../../api/toolsAndHardware/toolsAndHardware"
-import { directoratesList } from '../../../api/syncEmp/syncEmp'
+import { directoratesList, srpiEmpTypeListActive } from '../../../api/syncEmp/syncEmp'
 import { FaEdit } from "react-icons/fa";
 import { TiArrowBack } from "react-icons/ti";
 import Select from "react-select";
@@ -14,9 +14,12 @@ import Select from "react-select";
 const ToolsAndHardwareEdit = ({ID}) => {
         const { register, handleSubmit, setValue, reset, getValues } = useForm();
         const [loading, setLoading] = useState(false);
-        const [toolsData, setToolsDatas] = useState([]);
+        const [empData,setEmpData] = useState([])
+        const [selectedEmp, setSelectedEmp] = useState(null);
+        const [isUserDir, setIsUserDir] = useState(false)
+        const [isFirstUsed, setIsFirstUsed] = useState(false)
         const [data,setData] = useState([])
-        const [selectedDir, setSelectedDir] = useState(null);
+        const [selectedDir, setSelectedDir] = useState();
         const [dirOptions, setDirOptions] = useState([]);
         const [selectedTool, setSelectedTool] = useState(null);
         const { id } = useParams();
@@ -26,6 +29,10 @@ const ToolsAndHardwareEdit = ({ID}) => {
             navigate(`/Tools-Hardware-list`) 
         }
         useEffect(() => {
+            fetchEmpList();
+        }, [selectedDir,isFirstUsed,setSelectedDir]);
+
+        useEffect(() => {
             fetchData();
         }, []); 
 
@@ -34,7 +41,6 @@ const ToolsAndHardwareEdit = ({ID}) => {
                     try {
                         const response = await putToolsAndHardware(projectId, {});
                         const fetchedData = response?.data?.projectDetails;
-                        console.log(fetchedData)
                         if (fetchedData) {
                             const formattedStartDate = fetchedData.startDate
                             ? fetchedData.startDate.split("T")[0]
@@ -48,9 +54,6 @@ const ToolsAndHardwareEdit = ({ID}) => {
                                 startDate: formattedStartDate,
                                 endDate: formattedEndDate,
                             });
-            
-            
-                           
                             if (fetchedData?.tollsName && data.length > 0) {
                                 const selectToolsAndHardware = Array.isArray(fetchedData.tollsName) ? fetchedData.tollsName : [fetchedData.tollsName];
                                 const matchedToolsAndHardware = selectToolsAndHardware
@@ -59,8 +62,7 @@ const ToolsAndHardwareEdit = ({ID}) => {
                                 setSelectedTool(matchedToolsAndHardware);
                                 setValue("tollsName",fetchedData?.tollsName)
                             }
-
-                            if (fetchedData?.directorates && dirOptions.length > 0) {
+                            if ( !isUserDir && fetchedData?.directorates && dirOptions.length > 0) {
                                 const selectToolsAndHardware = Array.isArray(fetchedData.directorates) ? fetchedData.directorates : [fetchedData.directorates];
                                 const matchedToolsAndHardware = selectToolsAndHardware
                                     .map((directorates) => dirOptions.find((item) => item.label === directorates));
@@ -69,6 +71,14 @@ const ToolsAndHardwareEdit = ({ID}) => {
                                 setValue("directorates",fetchedData?.directorates)
                             }
                             
+                            if ( fetchedData?.assignedTo && empData.length > 0) {
+                                const selectToolsAndHardware = Array.isArray(fetchedData.assignedTo) ? fetchedData.assignedTo : [fetchedData.assignedTo];
+                                const matchedToolsAndHardware = selectToolsAndHardware
+                                    .map((assignedTo) => empData.find((item) => item.label === assignedTo));
+                
+                                setSelectedEmp(matchedToolsAndHardware);
+                                setValue("assignedTo",fetchedData?.assignedTo)
+                            }
              
                         }
                     } catch (error) {
@@ -76,8 +86,8 @@ const ToolsAndHardwareEdit = ({ID}) => {
                     }
                 };
             
-                if (projectId) fetchProject();
-            }, [projectId, reset, setValue,data,dirOptions]);
+                if (!loading && projectId && data.length > 0) { fetchProject();}
+            }, [projectId, reset, setValue,data,dirOptions,loading,isUserDir]);
 
              useEffect(() => {
                     const fetchDiretoratesData = async () => {
@@ -102,8 +112,7 @@ const ToolsAndHardwareEdit = ({ID}) => {
                 setLoading(true);
                 try {
                     const response = await getToolsAndHardwareMappping();
-                    const fetchDatas = response.data;
-                    setToolsDatas(fetchDatas)   
+                    const fetchDatas = response.data; 
                     if (fetchDatas && Array.isArray(fetchDatas)){
                     const option = fetchDatas.map((item)=>({
                         value:item._id,
@@ -126,9 +135,10 @@ const ToolsAndHardwareEdit = ({ID}) => {
                 const quantity = formData.quantity || getValues("quantity")
                 const startDate = formData.startDate || getValues("startDate")
                 const endDate = formData.endDate || getValues("endDate")
-                const directorates = formData.directorates || getValues("directorates")
+                const directorates = selectedDir?.label || formData.directorates || getValues("directorates")
                 const purchasedOrder = formData.purchasedOrder || getValues("purchasedOrder")
                 const description = formData.description || getValues("description")
+                const assignedTo = formData.assignedTo || getValues('assignedTo')
 
                 formDataToSubmit.append("tollsName",tollsName)
                 formDataToSubmit.append("quantity",quantity)
@@ -137,6 +147,7 @@ const ToolsAndHardwareEdit = ({ID}) => {
                 formDataToSubmit.append("directorates",directorates)
                 formDataToSubmit.append("purchasedOrder",purchasedOrder)
                 formDataToSubmit.append("description",description)
+                formDataToSubmit.append("assignedTo",assignedTo)
 
                 await putToolsAndHardware(projectId, formDataToSubmit);
                 toast.success('Form Updated successfully!', {
@@ -151,27 +162,57 @@ const ToolsAndHardwareEdit = ({ID}) => {
              setLoading(false)
         }
 
+          const fetchEmpList = async() =>{
+            setLoading(true);
+            try{
+                const dirValue = Array.isArray(selectedDir) ? selectedDir[0]?.value : selectedDir?.value;
+                if(!isFirstUsed && dirValue){
+                const response = await srpiEmpTypeListActive({dir:dirValue })
+                  const options = response.dropEdit
+                  .map((dir) => ({
+                    value: dir.ename,
+                    label: dir.ename,
+                  }));
+                  setEmpData(options);
+                  setIsFirstUsed(true)
+                } 
+              
+                }catch(error){
+                    console.error('Failed to fetch employee list:', error);
+                }
+                setLoading(false);  
+            } 
+
         const handleToolsAndHardwareChange=(selected) =>            
         {
             setSelectedTool(selected);
-            const toolsAndHardwareName = selected.value
+            const toolsAndHardwareName = selected.label
             setValue('tollsName',toolsAndHardwareName)
         }
 
         const handleDir = (selected)=>{
+            setIsFirstUsed(false)
             setSelectedDir(selected)
-            const directorates = selected.value
-            setValue("directorates",directorates )    
+            setIsUserDir(true)
+            const directorates = selected.label
+            setValue("directorates",directorates)
+        }
+
+        const handleEmp = (selected)=>{
+            setSelectedEmp(selected)
+            setIsUserDir(true)
+            const assignedTo = selected.value
+            setValue("assignedTo",assignedTo )  
         }
         
     return(
         <div>
            <ToastContainer  position="top-center" autoClose={5000} hideProgressBar={false} />
             <div className="row">
-                <div className="col-sm-11 col-md-11 col-lg-11">
+                <div className="col-sm-10 col-md-10 col-lg-10">
                     <h1>Edit Tools And Hardware m</h1>
                 </div>
-                <div className="col-sm-1 col-md-1 col-lg-1">
+                <div className="col-sm-2 col-md-2 col-lg-2">
                     <Button variant="danger" className='btn btn-success ' onClick={handleBackClick}>
                         <TiArrowBack />BACK
                     </Button>
@@ -210,10 +251,13 @@ const ToolsAndHardwareEdit = ({ID}) => {
                                 />
                             </Form.Group>
                             <Form.Group>
-                                <Form.Label className="fs-5 fw-bolder">Purchased Order<span className="text-danger">*</span></Form.Label>
-                                <Form.Control
-                                    type="text" 
-                                    {...register("purchasedOrder")} 
+                            <Form.Label className="fs-5 fw-bolder">Assigned Officer<span className="text-danger">*</span></Form.Label>
+                                <Select
+                                    name="assignedTo"
+                                    options={empData}
+                                    value={selectedEmp}
+                                    onChange={handleEmp}
+                                    isLoading={loading}
                                 />
                             </Form.Group>
                         </div>
@@ -237,6 +281,13 @@ const ToolsAndHardwareEdit = ({ID}) => {
                                     />
                                         </Form.Group>
                                 </div>
+                                <Form.Group>
+                                <Form.Label className="fs-5 fw-bolder">Purchased Order<span className="text-danger">*</span></Form.Label>
+                                <Form.Control
+                                    type="text" 
+                                    {...register("purchasedOrder")} 
+                                />
+                            </Form.Group>
                             </div>
                         </div>
                             <Form.Group>

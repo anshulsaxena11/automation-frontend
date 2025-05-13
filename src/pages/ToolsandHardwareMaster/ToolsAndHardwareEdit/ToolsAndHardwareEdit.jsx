@@ -14,7 +14,6 @@ const ToolsAndHardwareMappingEdit = ({ID}) => {
         const { register, handleSubmit, setValue, reset, getValues } = useForm();
         const [loading, setLoading] = useState(false);
         const [selectedOptions, setSelectedOptions] = useState([]);
-        const [error, setError] = useState("");
         const { id } = useParams();
         const projectId = ID || id;
         const navigate = useNavigate();
@@ -32,14 +31,10 @@ const ToolsAndHardwareMappingEdit = ({ID}) => {
                     try {
                         const response = await editToolsAndHardware(projectId, {});
                         const fetchedData = response?.data?.projectDetails;
-                        console.log(fetchedData)
                         if (fetchedData) {
                             reset({
                                 ...fetchedData,
-                            });
-            
-            
-                            
+                            });               
                             if (fetchedData?.toolsAndHardwareType && selectTypeOption.length > 0) {
                                 const selectToolsAndHardware = Array.isArray(fetchedData.toolsAndHardwareType) ? fetchedData.toolsAndHardwareType : [fetchedData.toolsAndHardwareType];
                                 const matchedToolsAndHardware = selectToolsAndHardware
@@ -85,9 +80,7 @@ const ToolsAndHardwareMappingEdit = ({ID}) => {
         {
             setSelectedOptions(selected);
             const toolsAndHardwareType = selected.value
-            setValue('toolsAndHardwareType',toolsAndHardwareType)
-
-            
+            setValue('toolsAndHardwareType',toolsAndHardwareType)    
         }
         
     return(
