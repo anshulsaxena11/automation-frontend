@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FaBars, FaHome, FaSitemap, FaTools } from "react-icons/fa";
+import { FaTimeline } from "react-icons/fa6";
 import { TbReportAnalytics } from "react-icons/tb";
 import { RiAdminFill } from "react-icons/ri";
 import { BiSolidReport } from "react-icons/bi";
@@ -10,7 +11,7 @@ import "./Sidebar.css";
 
 const Sidebar = ({ onToggle }) => {
   const [isExpanded, setIsExpanded] = useState(true);
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   const toggleSidebar = () => {
     const newState = !isExpanded;
@@ -35,8 +36,9 @@ const Sidebar = ({ onToggle }) => {
       navigate("/Tools-Hardware-Master-List")
     }else if(page ==="ToolsHradwareList"){
       navigate("/Tools-Hardware-list")
+    }else if(page === "Timeline"){
+      navigate("/Timeline")
     }
-   
   };
 
   return (
@@ -76,6 +78,10 @@ const Sidebar = ({ onToggle }) => {
         <li className="menu-item" onClick={() => handlePageSelect("ToolsHradwareList")}>
           <FaTools   className="icon" />
           {isExpanded && <span className="label">Tools/Hardware Mapping</span>}
+        </li>
+        <li className="menu-item" onClick={() => handlePageSelect("Timeline")}>
+          <FaTimeline    className="icon" />
+          {isExpanded && <span className="label">Project Management</span>}
         </li>
       </ul>
     </div>

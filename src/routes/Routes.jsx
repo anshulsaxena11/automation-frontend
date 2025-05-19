@@ -8,6 +8,7 @@ import ProjectMapping from "../pages/ProjectMapping/ProjectMapping"
 import SkillMapping from "../pages/skillMapping/SkillMappimg"
 import ToolsAndHardwareList from "../pages/toolsandHardware/ToolsAndHardwareList/ToolsAndHardwareList"
 import ToolsAndHardwareMappingList from "../pages/ToolsandHardwareMaster/toolsAndHardwareList/ToolsAndHardwareList"
+import TimelineEvent from "../pages/Timeline/timeline"
 
 const AppRoutes = () => {
   return (
@@ -20,6 +21,7 @@ const AppRoutes = () => {
       <Route Path="/skills-Mapping" element={<SkillMapping/>}/>
       <Route path="/Tools-Hardware-list" element={<ToolsAndHardwareList/>}/>
       <Route path="/Tools-Hardware-Master-List" element={<ToolsAndHardwareMappingList/>}/>
+      <Route path="/Timeline" element={<TimelineEvent/>}/>
     </Routes>
   );
 };

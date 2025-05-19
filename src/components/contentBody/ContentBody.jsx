@@ -21,6 +21,7 @@ import ToolsAndHardwareMappingView from '../../pages/ToolsandHardwareMaster/Tooo
 import ToolsAndHardwarelist from'../../pages/toolsandHardware/ToolsAndHardwareList/ToolsAndHardwareList.jsx'
 import ToolsAndHardwareEdit from '../../pages/toolsandHardware/ToolsAndHardwareEdit/ToolsAndHardwareEdit.jsx'
 import ToolsAndHardwareView from '../../pages/toolsandHardware/toolsAndHardwareView/TollAndHardwareView.jsx'
+import TimelineEvent from '../../pages/Timeline/timeline.jsx'
 import './contentBody.css'
 
 const ContentBody = ({ isSidebarExpanded }) => {
@@ -66,6 +67,7 @@ const ContentBody = ({ isSidebarExpanded }) => {
           <Route path="/Tools-Hardware-Master-Edit/:id" element={<ToolsAndHardwareMappingEdit/>}/>
           <Route path="/Tools-Hardware-Master-View/:id" element={<ToolsAndHardwareMappingView/>}/>
           <Route path='/Tools-Hardware-View/:id' element={<ToolsAndHardwareView/>}/>
+          <Route path="/Timeline" element={<TimelineEvent/>}/>
         </Routes>
       </div>
     </div>

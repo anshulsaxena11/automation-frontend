@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { srpiEmpTypeListActive, srpiEmpTypeList, centreList, directoratesList, skillsMapping } from "../../api/syncEmp/syncEmp";
-import ListView from '../../components/listView/listView';
 import { getProjectTypeList } from "../../api/projectTypeListApi/projectTypeListApi";
-import { Table, Pagination, InputGroup, FormControl, Button, Spinner } from 'react-bootstrap';
+import { Table, Pagination, InputGroup, FormControl, Button } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 import Select from 'react-select';
 import 'react-toastify/dist/ReactToastify.css';
@@ -12,7 +11,6 @@ const SkillMapping = () => {
     const [selectedCentre, setSelectedCentre] = useState(null);
     const [totalCount, setTotalCount] = useState(0);
     const [loader, setLoader] = useState(false);
-    const [error, setError] = useState(null);
     const [data, setData] = useState([]);
     const [projectTypes, setProjectTypes] = useState([]);
     const [typeOptions, setTypeOptions] = useState([]);
@@ -52,7 +50,7 @@ const SkillMapping = () => {
 
     useEffect(() => {
         fetchEmpList();
-    }, [page, searchQuery, selectedCentre, selectedType, selecteddir]);
+    }, [ page, searchQuery, selectedCentre, selectedType, selecteddir ]);
 
     const fetchEmpList = async () => {
         setLoader(true);
@@ -169,13 +167,6 @@ const SkillMapping = () => {
     const handleDirChange = (selectedOption) => {
         setSelectedDir(selectedOption);
         setPage(1);
-    };
-
-    const handleProjectTypeChange = (empid, selectedOption) => {
-        const updatedData = data.map((item) =>
-            item.empid === empid ? { ...item, selectedProjectType: selectedOption } : item
-        );
-        setData(updatedData);
     };
 
     const handleButtonSkill = async (emp, newSkillIndex) => {

@@ -37,6 +37,7 @@ const ProjectMapping = () =>{
     const columns = [
         'empid',
         'ename',
+        'edesg',
         'centre',
         'dir',
         'etpe',
@@ -45,6 +46,7 @@ const ProjectMapping = () =>{
       const columnNames = {
         empid: 'Employee ID',
         ename: 'Employe Name',
+        edesg:'Designation',
         centre: 'Centre',
         dir:'Directorates',
         etpe:'Employee Type',

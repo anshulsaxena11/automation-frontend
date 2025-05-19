@@ -5,10 +5,11 @@ import toast from 'react-hot-toast';
 const Popup = ({ show, handleClose, title, children, showFooter, footerText, handleAdd }) => {
   const [loading, setLoading] = useState(false);
 
+  // Handle add button click, call provided function, handle loading state and error/success
   const handleAddClick = async () => {
     setLoading(true);
     try {
-      await handleAdd(); // Call the provided function
+      await handleAdd(); // Call the provided handleAdd function
       toast.success("Successfully added!");
     } catch (error) {
       toast.error("Failed to add. Please try again.");
@@ -24,9 +25,10 @@ const Popup = ({ show, handleClose, title, children, showFooter, footerText, han
         <Modal.Title>{title}</Modal.Title>
       </Modal.Header>
       <Modal.Body>{children}</Modal.Body>
+
       {showFooter && (
         <Modal.Footer>
-          <Button variant="primary" type="submit" onClick={handleAddClick} disabled={loading}>
+          <Button variant="primary" onClick={handleAddClick} disabled={loading}>
             {loading ? (
               <>
                 <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> Adding...
