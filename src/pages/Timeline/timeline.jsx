@@ -33,7 +33,7 @@ const Timeline = () => {
                     setViewData(response.response); 
                 }
             } catch (error) {
-                console.error('Failed to fetch employee list:', error);
+                console.error('Failed to fetch employee list:');
             }
             setLoading(false);
         };
@@ -81,7 +81,7 @@ const Timeline = () => {
                     console.log("No data received for the project.");
                 }
             } catch (error) {
-                console.error('Error fetching project details:', error);
+                console.error('Error fetching project details:');
             } finally {
                 setLoading(false);
             }
@@ -106,7 +106,7 @@ const Timeline = () => {
                     throw new Error("Unexpected data format or empty project list");
                 }
             } catch (err) {
-                console.error("Error fetching project types:", err);
+                console.error("Error fetching project types:");
             } finally {
                 setLoading(false);
             }
@@ -117,7 +117,7 @@ const Timeline = () => {
 
     const handleProjectName = (e) => {
         setselectedProjectName(e);
-        setExpandedPhases({}); // Reset expansion on project change
+        setExpandedPhases({}); 
     };
 
     const handleShowModal = () => setShowModal(true);
@@ -205,7 +205,7 @@ const Timeline = () => {
                 toast.error("Failed to submit phases.");
             }
         } catch (error) {
-            console.error("Error submitting all phases:", error);
+            console.error("Error submitting all phases:");
             toast.error("Submission error");
         }
     };
