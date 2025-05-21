@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Row, Col, Button, Table } from 'react-bootstrap';
 import { PiImagesSquareBold } from 'react-icons/pi'; 
 import { FcDocument } from 'react-icons/fc'; 
+import { TiArrowBack } from "react-icons/ti";
 import PreviewModal from '../previewfile/preview';  
 
 const DetailView = ({ title, data, loading, fields, labels, buttonName, onBackClick, uploadedFile, fileType }) => {
@@ -37,12 +38,12 @@ const DetailView = ({ title, data, loading, fields, labels, buttonName, onBackCl
   return (
     <div>
       <div className='row'>
-        <div className='col-sm-11 col-md-11 col-lg-11'>
+        <div className='col-sm-10 col-md-10 col-lg-10'>
           <h1>{title}</h1>
         </div>
-        <div className='col-sm-1 c0l-lg-1 col-md-1 pt-2'>
+        <div className='col-sm-2 col-lg-2 col-md-2 pt-2'>
           <Button variant="danger" className='btn btn-success ' onClick={onBackClick}>
-            {buttonName}
+            <TiArrowBack />{buttonName}
           </Button>
         </div>
       </div>
@@ -165,7 +166,7 @@ const DetailView = ({ title, data, loading, fields, labels, buttonName, onBackCl
       </Row>
 
       <Button variant="danger" className='btn btn-success ' onClick={onBackClick}>
-        {buttonName}
+       <TiArrowBack /> {buttonName}
       </Button>
 
       {/* Modal for preview */}

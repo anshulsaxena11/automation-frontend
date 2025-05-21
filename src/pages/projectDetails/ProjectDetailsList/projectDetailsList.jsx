@@ -13,7 +13,6 @@ const ProjectDetailsList = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Define columns and a mapping for the column names
   const columns = [
     'workOrderNo',
     'orderType',
@@ -51,7 +50,7 @@ const ProjectDetailsList = () => {
       setTotalCount(response.total);
       setTotalPages(response.totalPages);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error fetching data:');
     } finally {
       setLoading(false);
     }
@@ -71,7 +70,7 @@ const ProjectDetailsList = () => {
   };
 
   const handleAddNewClick = () => {
-    navigate("/projectDetails");  // Navigate to Home.jsx page when "Add New" is clicked
+    navigate("/projectDetails"); 
   };
   const handleViewClick = (data) => {
     const id = data._id

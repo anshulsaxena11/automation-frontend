@@ -8,7 +8,10 @@ import { getdirectrate } from "../../../api/directrateAPI/directrate";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
+import PreviewModal from '../../../components/previewfile/preview';  
 import Select from "react-select";
+import { TiArrowBack } from "react-icons/ti";
+import { PiImagesSquareBold } from "react-icons/pi";
 import './projectDetailsEdit'
 
 const ProjectDetailsEdit = ({ ID, onClose }) => {
@@ -18,8 +21,10 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
     const [selectedOptions, setSelectedOptions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [filePreviewUrl, setFilePreviewUrl] = useState("");
+    const [showModal, setShowModal] = useState(false);
     const [error, setError] = useState("");
     const [directrateList, setDirectrateList] = useState([]);
+    const [previewFileType, setPreviewFileType] = useState('');
     const [selectedDirectorate, setSelectedDirectorate] = useState(null);
 
     const { id } = useParams();
@@ -32,7 +37,7 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
                 const response = await getProjectTypeList();
                 setProjectTypes(response?.data || []);
             } catch (error) {
-                console.error("Error fetching project types:", error);
+                console.error("Error fetching project types:");
             }
         };
         fetchProjectTypes();
@@ -48,15 +53,15 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
         const response = await getdirectrate();
         if (response?.data?.data && Array.isArray(response.data.data)) {
           const options = response.data.data.map((item) => ({
-            label: item.directrate, // Assuming each item has a name
+            label: item.directrate,
           }));
           setDirectrateList(options);
         } else {
           throw new Error("Unexpected data format or empty directrate list");
         }
       } catch (err) {
-        setError(`Failed to fetch directrate list: ${err.message}`);
-        console.error("Error fetching directrate list:", err);
+        setError(`Failed to fetch directrate list:`);
+        console.error("Error fetching directrate list:");
       } finally {
         setLoading(false);
       }
@@ -68,9 +73,9 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
         const fetchProject = async () => {
             try {
                 const response = await editProjectDetails(projectId, {}, null);
-                console.log(response)
                 const fetchedData = response?.data?.projectDetails;
                 const fileUrl = response?.data?.filePreviewUrl
+                setFilePreviewUrl(fileUrl);
 
                 if (fetchedData) {
                     const formattedStartDate = fetchedData.startDate
@@ -89,7 +94,6 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
     
                     setFile(fetchedData.workOrder || null);
     
-                    // Set project types
                     const selectedProjectTypes = fetchedData.projectType.map(type => ({
                         value: type._id,
                         label: type.ProjectTypeName,
@@ -109,7 +113,7 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
                       
                 }
             } catch (error) {
-                console.error("Error fetching project details:", error);
+                console.error("Error fetching project details:");
             }
         };
     
@@ -201,16 +205,36 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
         const selectedString = selected && selected.label ? String(selected.label) : '';
         setValue('directrate',selectedString)
     }
+
+    const getFileTypeFromUrl = (url) => {
+        const extension = url?.split('.').pop()?.toLowerCase();
+
+        if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(extension)) {
+            return 'image/';
+        } else if (extension === 'pdf') {
+            return 'application/pdf';
+        } else {
+            return 'unknown';
+        }
+    };
+
+    const handlePreviewClick = (url) => {
+        const fileType = getFileTypeFromUrl(url);
+        setFilePreviewUrl(url); // Directly set the URL for preview
+        setPreviewFileType(fileType);
+        setShowModal(true);
+    };
+
     return (
         <div className="container-fluid">
             <ToastContainer  position="top-center" autoClose={5000} hideProgressBar={false} />
             <div className="row">
-                <div className="col-sm-11 col-md-11 col-lg-11">
+                <div className="col-sm-10 col-md-10 col-lg-10">
                     <h1>Update Project Details</h1>
                 </div>
-                <div className="col-sm-1 col-md-1 col-lg-1">
+                <div className="col-sm-2 col-md-2 col-lg-2">
                     <Button variant="danger" className='btn btn-success ' onClick={handleBackClick}>
-                        BACK
+                        <TiArrowBack />BACK
                     </Button>
                 </div>
             </div>
@@ -347,8 +371,8 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
                             isMulti
                             name="projectType"
                             options={projectTypeOptions}
-                            value={selectedOptions} // Use selectedOptions state
-                            onChange={handleProjectTypeChange} // Handle change to update both state and form
+                            value={selectedOptions} 
+                            onChange={handleProjectTypeChange} 
                         />
                         </Form.Group>
                         <Form.Group>
@@ -369,6 +393,24 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
                             onChange={(e) => setFile(e.target.files[0])} 
                         />
                         </Form.Group>
+                          <div className="col-sm-7 col-md-7 col-lg-7">
+                                <div className="col-md-6 ">
+                                    <div className="mt-2" style={{ cursor: "pointer", marginTop: "10px" }}>
+                                        <h6
+                                        style={{ cursor: "pointer", marginTop: "10px" }}
+                                        onClick={() => handlePreviewClick(filePreviewUrl)}
+                                        >
+                                            <PiImagesSquareBold style={{ marginRight: "8px" }} /> Uploaded
+                                        </h6>
+                                    </div>
+                                </div>
+                            </div>
+                         <PreviewModal 
+                            show={showModal} 
+                            onHide={() => setShowModal(false)} 
+                            preview={filePreviewUrl} 
+                            fileType={previewFileType} 
+                        />
                     </div>
                 </div>
                 <h1 className="pt-5">Contact Details Of Client</h1>
@@ -438,7 +480,7 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
                             )}
                     </Button>
                     <Button variant="danger" className='mt-4 mx-4' onClick={handleBackClick}>
-                        BACK
+                        <TiArrowBack />BACK
                     </Button>
             </form>
         </div>

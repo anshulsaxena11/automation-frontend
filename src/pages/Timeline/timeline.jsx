@@ -21,7 +21,6 @@ const Timeline = () => {
     ]);
     const [resourceMapping, setResourceMapping] = useState([]); 
 
-    // State for expanded/collapsed phases, store true/false per phase index
     const [expandedPhases, setExpandedPhases] = useState({});
 
     useEffect(() => {
@@ -71,7 +70,6 @@ const Timeline = () => {
                         }));
                         setPhase(formattedPhases);
 
-                        // By default expand all phases when loading
                         const expandedInit = {};
                         formattedPhases.forEach((_, idx) => {
                             expandedInit[idx] = true;
@@ -136,7 +134,6 @@ const Timeline = () => {
                 comments: "",
             },
         ]);
-        // Expand the newly added phase by default
         setExpandedPhases(prev => ({ ...prev, [Phase.length]: true }));
     };
 
@@ -148,11 +145,11 @@ const Timeline = () => {
         }));
         setPhase(reindexedSteps);
 
-        // Remove the expansion state of the removed phase and re-index the rest
+
         setExpandedPhases(prev => {
             const newExpanded = {};
             reindexedSteps.forEach((_, idx) => {
-                newExpanded[idx] = prev[idx >= index ? idx + 1 : idx] ?? true; // Shift keys after removed index
+                newExpanded[idx] = prev[idx >= index ? idx + 1 : idx] ?? true; 
             });
             return newExpanded;
         });
@@ -164,7 +161,7 @@ const Timeline = () => {
         setPhase(updatedPhases);
     };
 
-    // Toggle expanded/collapsed for a phase index
+
     const toggleExpandPhase = (index) => {
         setExpandedPhases(prev => ({
             ...prev,
@@ -198,7 +195,6 @@ const Timeline = () => {
                 }));
                 setPhase(formattedPhases);
 
-                // Reset expand states after submit (expand all)
                 const expandedInit = {};
                 formattedPhases.forEach((_, idx) => {
                     expandedInit[idx] = true;
@@ -213,7 +209,6 @@ const Timeline = () => {
         }
     };
 
-    // Check if all fields are filled for all phases
     const isAddPhaseDisabled = () => {
         return Phase.some(
             (phase) =>
@@ -226,7 +221,6 @@ const Timeline = () => {
 
     return (
         <div>
-            {/* Modal Popup for Resource Allotment */}
             <Popup show={showModal} handleClose={handleCloseModal} title="Resource Allotment" showFooter={false}>
                 <div>
                     {resourceMapping.length > 0 ? (
@@ -262,7 +256,6 @@ const Timeline = () => {
                 </div>
             </Popup>
 
-            {/* Select Project Name */}
             <div className="container">
                 <h1>Project Management</h1>
                 <hr />
@@ -274,7 +267,6 @@ const Timeline = () => {
                     isClearable
                 />
                 
-                {/* Conditional Rendering based on Project Selection */}
                 {SelectedProjectName && (
                     <div>
                         <div className="row mt-4">
@@ -307,18 +299,14 @@ const Timeline = () => {
                         <div className="my-4">
                             <Button variant="primary" onClick={handleShowModal}>Resource Allotment</Button>
                         </div>
-
-                        {/* Phase Section */}
                         <h4>Project Phases</h4>
                         {Phase.length === 0 && <p>No phases found.</p>}
                         {Phase.map((phase, index) => (
                             <div key={index} className="mb-3 border p-3 rounded">
                                 <div 
                                   style={{ cursor: "pointer", userSelect: "none", display: "flex", alignItems: "center", justifyContent: "space-between" }}
-                                  onClick={() => toggleExpandPhase(index)}
-                                >
+                                  onClick={() => toggleExpandPhase(index)}>
                                     <h5>{phase.noOfPhases}</h5>
-                                     
                                     <Button
                                         variant="black"
                                         size="sm"
@@ -327,14 +315,8 @@ const Timeline = () => {
                                         {expandedPhases[index] ? <IoIosArrowDropupCircle /> : <IoIosArrowDropdownCircle />}
                                     </Button>        
                                 </div>
-                              
-                                
-
                                 {expandedPhases[index] && (
                                     <div className="mt-3">
-
-                              
-                                   
                                         <div className='row'>
                                             <div className='col-sm-4 col-md-4 col-lg-4'>
                                                 <Form.Group className="mb-3">
@@ -367,7 +349,7 @@ const Timeline = () => {
                                                     <Form.Label>Report Submitted Date</Form.Label>
                                                     <Form.Control
                                                         type="date"
-                                                        disabled={!phase.testCompletedEndDate}
+                                                          disabled={!phase.testCompletedEndDate}
                                                         min={phase.testCompletedEndDate || ''}
                                                         value={phase.reportSubmissionEndDate}
                                                         onChange={(e) =>
@@ -377,8 +359,6 @@ const Timeline = () => {
                                                 </Form.Group>
                                             </div>
                                         </div>
-
-
                                         <Form.Group className="mb-3">
                                             <Form.Label>Comments</Form.Label>
                                             <Form.Control

@@ -83,7 +83,7 @@ const AdminSyncEmploy = () =>{
             setTotalCount(response.total);
             setTotalPages(response.totalPages);
         }catch(error){
-            console.error('Failed to fetch employee list:', error);
+            console.error('Failed to fetch employee list:');
         }
         setLoader(false);
     }
@@ -168,7 +168,7 @@ const AdminSyncEmploy = () =>{
                 }));
                 setCentreOptions(options);
             } catch (error) {
-                console.error('Error fetching centre list:', error);
+                console.error('Error fetching centre list:');
             } finally {
                 setLoader(false);
             }
@@ -187,7 +187,7 @@ const AdminSyncEmploy = () =>{
               }));
               setDirOptions(options);
           } catch (error) {
-              console.error('Error fetching Directorates list:', error);
+              console.error('Error fetching Directorates list:');
           } finally {
               setLoader(false);
           }
@@ -206,7 +206,7 @@ const AdminSyncEmploy = () =>{
               }));
               setTypeOptions(options);
           } catch (error) {
-              console.error('Error fetching centre list:', error);
+              console.error('Error fetching centre list:');
           } finally {
               setLoader(false);
           }

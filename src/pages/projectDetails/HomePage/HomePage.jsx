@@ -21,6 +21,8 @@ import { PiImagesSquareBold } from "react-icons/pi";
 import { FcDocument } from "react-icons/fc";
 import { useNavigate } from 'react-router-dom';
 import Select from "react-select";
+import { TiArrowBack } from "react-icons/ti";
+import { IoIosSave } from "react-icons/io";
 import "./homePage.css";
 
 
@@ -46,7 +48,6 @@ const HomePage = () => {
   const [projectTypes, setProjectTypes] = useState([]);
   const [loading, setLoading] = useState(false); 
   const [fileType, setFileType] = useState(''); 
-  const [directrateList, setDirectrateList] = useState(''); 
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
@@ -67,7 +68,7 @@ const HomePage = () => {
           console.error("Expected an array in response.data but got:", response);
         }
       } catch (error) {
-        console.error("Error fetching device list:", error);
+        console.error("Error fetching device list:");
       }
     };
     
@@ -94,8 +95,8 @@ const HomePage = () => {
           throw new Error("Unexpected data format or empty directrate list");
         }
       } catch (err) {
-        setError(`Failed to fetch directrate list: ${err.message}`);
-        console.error("Error fetching directrate list:", err);
+       
+        console.error("Error fetching directrate list:");
       } finally {
         setLoading(false);
       }
@@ -328,12 +329,12 @@ const HomePage = () => {
       />
       </Popup>
       <div className="row">
-        <div className="col-sm-11 col-md-11 col-lg-11">
+        <div className="col-sm-10 col-md-10 col-lg-10">
           <h1>Project Details</h1>
         </div>
-        <div className="col-sm-1 col-md-1 col-lg-1">
+        <div className="col-sm-2 col-md-2 col-lg-2">
           <Button variant="danger" className='btn btn-success ' onClick={handleBackClick}>
-              BACK
+            <TiArrowBack />BACK
           </Button>
         </div>
       </div>
@@ -708,9 +709,14 @@ const HomePage = () => {
             {loading ? (
                 <Spinner animation="border" size="sm" />
               ) : (
-                'Submit'
+               <>
+                <IoIosSave /> SAVE
+              </>
               )}
             </Button>
+             <Button variant="danger" className='btn btn-success mx-4' onClick={handleBackClick}>
+              <TiArrowBack /> BACK
+              </Button>
           </Form>
         </div>
       </div>

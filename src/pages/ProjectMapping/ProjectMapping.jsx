@@ -31,6 +31,7 @@ const ProjectMapping = () =>{
             fetchEmpList();
         } else {
           setData([]); 
+          setViewData([]);
         }
       }, [page, searchQuery, selectedCentre,selectedType,selectedProject,selecteddir]);
 
@@ -66,7 +67,6 @@ const ProjectMapping = () =>{
                 const preViewSelected = response.response
                 .filter(emp => emp.isChecked)
                 .map(emp => emp._id);
-                // Pre-check already mapped employees
                 const preSelected = response.data
                   .filter(emp => emp.isChecked)
                   .map(emp => emp._id);
@@ -77,7 +77,7 @@ const ProjectMapping = () =>{
                 setTotalPages(response.totalPages);
               }
           }catch(error){
-              console.error('Failed to fetch employee list:', error);
+              console.error('Failed to fetch employee list:');
           }
           setLoader(false);
         }
@@ -99,14 +99,13 @@ const ProjectMapping = () =>{
                       value: centre._id,
                       label: centre.projectName,
                   }));
-                  console.log(options,)
                 setProjectName(options);
               } else {
                 throw new Error("Unexpected data format or empty project list");
               }
             } catch (err) {
-              setError(`Failed to fetch project types: ${err.message}`);
-              console.error("Error fetching project types:", err);
+              setError(`Failed to fetch project types:`);
+              console.error("Error fetching project types:");
             } finally {
               setLoader(false);
             }
@@ -146,7 +145,7 @@ const ProjectMapping = () =>{
             await fetchEmpList();
             
           } catch (error) {
-            console.error("Mapping failed:", error);
+            console.error("Mapping failed:");
             toast.error('Failed to Mapped employee.',{
               className: 'custom-toast custom-toast-error',
             })
@@ -166,7 +165,7 @@ const ProjectMapping = () =>{
                   }));
                   setTypeOptions(options);
               } catch (error) {
-                  console.error('Error fetching centre list:', error);
+                  console.error('Error fetching centre list:');
               } finally {
                   setLoader(false);
               }
@@ -185,7 +184,7 @@ const ProjectMapping = () =>{
                   }));
                   setCentreOptions(options);
               } catch (error) {
-                  console.error('Error fetching centre list:', error);
+                  console.error('Error fetching centre list:');
               } finally {
                   setLoader(false);
               }
@@ -204,7 +203,7 @@ const ProjectMapping = () =>{
                   }));
                   setDirOptions(options);
               } catch (error) {
-                  console.error('Error fetching Directorates list:', error);
+                  console.error('Error fetching Directorates list:');
               } finally {
                   setLoader(false);
               }

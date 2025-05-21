@@ -3,32 +3,32 @@
 }
 
 .custom-toast {
-    background: #333; /* Black background for individual toast */
-    color: white; /* White text color for contrast */
-    border-radius: 10px; /* Rounded corners for each toast */
-    padding: 15px 30px; /* Padding inside the toast */
-    font-size: 16px; /* Larger font size */
-    box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.3); /* Dark shadow for depth */
-    opacity: 1 !important; /* Ensure toast visibility */
-    transition: all 0.4s ease-in-out; /* Smooth transition for toast */
+    background: #333; 
+    color: white; 
+    border-radius: 10px; 
+    padding: 15px 30px; 
+    font-size: 16px; 
+    box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.3); 
+    opacity: 1 !important; 
+    transition: all 0.4s ease-in-out; 
   }
   
-  /* Optional: Custom style for success toast */
+  
   .custom-toast-success {
-    background: #28a745; /* Green background for success toast */
+    background: #28a745; 
   }
   
-  /* Optional: Custom style for error toast */
+
   .custom-toast-error {
-    background: #dc3545; /* Red background for error toast */
+    background: #dc3545;
   }
   
-  /* Optional: Custom style for info toast */
+
   .custom-toast-info {
-    background: #17a2b8; /* Blue background for info toast */
+    background: #17a2b8; 
   }
   
-  /* Optional: Custom style for warning toast */
+
   .custom-toast-warning {
-    background: #ffc107; /* Yellow background for warning toast */
+    background: #ffc107; 
   }

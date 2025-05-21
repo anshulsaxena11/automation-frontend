@@ -27,7 +27,7 @@ const validationSchema = yup.object({
   PrimaryFullName: yup.string().required("Primary Full Name is required"),
   SecondaryFullName: yup.string(),
   PrimaryPhoneNo: yup.string().matches(/^\d{10}$/, "Primary Phone Number must be 10 digits").required("Primary Phone Number is required"),
-  SecondaryPhoneNo: yup.string().matches(/^\d{10}$/, "Secondary Phone Number must be 10 digits"),
+  SecondaryPhoneNo: yup.string().nullable().notRequired().matches(/^\d{10}$/, {message:"Secondary Phone Number must be 10 digits", excludeEmptyString: true},),
   PrimaryEmail: yup.string().email("Invalid email format").required("Primary Email is required"),
   projectManager: yup.string().required("Project Manager Name is required"),
   // noOfauditor:yup.number().positive().required("auditor Value is required"),

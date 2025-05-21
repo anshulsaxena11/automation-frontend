@@ -63,14 +63,13 @@ const SkillMapping = () => {
                 etpe: selectedType?.value,
                 dir: selecteddir?.value
             });
-            console.log(response)
             if (response && response.data) {
                 setData(response.data);
                 setTotalCount(response.total);
                 setTotalPages(response.totalPages);
             }
         } catch (error) {
-            console.error('Failed to fetch employee list:', error);
+            console.error('Failed to fetch employee list:');
         }
         setLoader(false);
     };
@@ -86,7 +85,7 @@ const SkillMapping = () => {
                 }));
                 setTypeOptions(options);
             } catch (error) {
-                console.error('Error fetching centre list:', error);
+                console.error('Error fetching centre list:');
             } finally {
                 setLoader(false);
             }
@@ -124,7 +123,7 @@ const SkillMapping = () => {
                 }));
                 setDirOptions(options);
             } catch (error) {
-                console.error('Error fetching Directorates list:', error);
+                console.error('Error fetching Directorates list:');
             } finally {
                 setLoader(false);
             }
@@ -136,10 +135,9 @@ const SkillMapping = () => {
         const fetchProjectTypeList = async () => {
             try {
                 const response = await getProjectTypeList();
-                console.log(response)
                 setProjectTypes(response.data);
             } catch (error) {
-                console.error("Error fetching project types:", error);
+                console.error("Error fetching project types:");
             }
         };
         fetchProjectTypeList();

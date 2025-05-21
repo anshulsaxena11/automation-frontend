@@ -14,10 +14,9 @@ const ProjectDetailView = () => {
   const fetchProjectDetails = async () => {
     try {
       const response = await getProjectDetailsById(id); 
-      console.log(response);
       setProject(response.data);
     } catch (error) {
-      console.error('Error fetching project details:', error);
+      console.error('Error fetching project details:',);
     } finally {
       setLoading(false);
     }
