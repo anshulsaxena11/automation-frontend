@@ -59,8 +59,9 @@ const Timeline = () => {
                     });
 
                     setResourceMapping(fetchedData.resourseMapping || []);
-
-                    if (fetchPhase.phase && Array.isArray(fetchPhase.phase)) {
+                    if (!fetchPhase ||!Array.isArray(fetchPhase.phase)||fetchPhase.phase.length === 0 ){
+                        setPhase([]);
+                    } else if (fetchPhase.phase && Array.isArray(fetchPhase.phase)) {
                         const formattedPhases = fetchPhase.phase.map((p, index) => ({
                             noOfPhases: `Phase ${index + 1}`,
                             projectStartDate: p.projectStartDate?.split('T')[0] || '',
