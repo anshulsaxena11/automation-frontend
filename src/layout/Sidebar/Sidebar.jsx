@@ -61,11 +61,11 @@ const Sidebar = ({ onToggle }) => {
         </li>
         <li className="menu-item" onClick={() => handlePageSelect("adminEmp")}>
           <RiAdminFill className="icon" />
-          {isExpanded && <span className="label">Admin Portal</span>}
+          {isExpanded && <span className="label">VAPT Team Members</span>}
         </li> 
         <li className="menu-item" onClick={() => handlePageSelect("projectMapping")}>
           <FaSitemap  className="icon" />
-          {isExpanded && <span className="label">Project Mapping</span>}
+          {isExpanded && <span className="label">PR Mapping</span>}
         </li>
         <li className="menu-item" onClick={() => handlePageSelect("SkillMapping")}>
           <GiSkills  className="icon" />

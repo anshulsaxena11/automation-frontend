@@ -22,6 +22,7 @@ const ToolsAndHardware = () => {
   const [selectedDir, setSelectedDir] = useState(null);
   const [selectedEmp, setSelectedEmp] = useState(null);
   const [empData,setEmpData] = useState([])
+  const [typeOfTool, setTypeOfTool] = useState()
   const [toolsData, setToolsDatas] = useState([]);
   const [dirOptions, setDirOptions] = useState([]);
   const { control, handleSubmit, formState: { errors }, setValue, reset } = useForm({
@@ -48,11 +49,13 @@ const ToolsAndHardware = () => {
     try {
       const response = await getToolsAndHardwareMappping();
       const fetchDatas = response.data;
+      console.log(fetchDatas)
       setToolsDatas(fetchDatas)   
       if (fetchDatas && Array.isArray(fetchDatas)){
         const option = fetchDatas.map((item)=>({
           value:item._id,
-          label:item.tollsName
+          label:item.tollsName,
+          type:item.toolsAndHardwareType,
       }))            
       setData(option);
       } 
@@ -64,6 +67,8 @@ const ToolsAndHardware = () => {
   };
 
   const handleTools = (SelectedOption) =>{
+    const selectedTool=SelectedOption?.type
+    setTypeOfTool(selectedTool)
     const selectedValue = SelectedOption?.label
     setSelectedTool(SelectedOption)
     setValue('tollsName',selectedValue)
@@ -260,7 +265,14 @@ const ToolsAndHardware = () => {
                   <div className='row'>
                     <div className='col-sm-6 col-md-6 col-lg-6'>
                       <Form.Group className="mb-3" controlId="StartDate">
-                        <Form.Label className="fs-5 fw-bolder">Start Date<span className="text-danger">*</span></Form.Label>
+                         <Form.Label className="fs-5 fw-bolder">
+                            {typeOfTool?.toLowerCase().includes('software')
+                              ? 'License Start Date'
+                              : typeOfTool?.toLowerCase().includes('warranty') || typeOfTool?.toLowerCase().includes('hardware')
+                              ? 'Warranty Start Date'
+                              : 'Start Date'}
+                            <span className="text-danger">*</span>
+                          </Form.Label>
                         <Controller
                           name="startDate"
                           control={control}
@@ -271,7 +283,14 @@ const ToolsAndHardware = () => {
                     </div>
                     <div className='col-sm-6 col-md-6 col-lg-6'>
                       <Form.Group className="mb-3" controlId="EndDate">
-                        <Form.Label className="fs-5 fw-bolder">End Date<span className="text-danger">*</span></Form.Label>
+                       <Form.Label className="fs-5 fw-bolder">
+                            {typeOfTool?.toLowerCase().includes('software')
+                              ? 'License End Date'
+                              : typeOfTool?.toLowerCase().includes('warranty') || typeOfTool?.toLowerCase().includes('hardware')
+                              ? 'Warranty End Date'
+                              : 'End Date'}
+                            <span className="text-danger">*</span>
+                          </Form.Label>
                         <Controller
                           name="endDate"
                           control={control}

@@ -22,6 +22,7 @@ const ToolsAndHardwareEdit = ({ID}) => {
         const [selectedDir, setSelectedDir] = useState();
         const [dirOptions, setDirOptions] = useState([]);
         const [selectedTool, setSelectedTool] = useState(null);
+        const [typeOfTool, setTypeOfTool] = useState()
         const { id } = useParams();
         const projectId = ID || id;
         const navigate = useNavigate();
@@ -60,6 +61,7 @@ const ToolsAndHardwareEdit = ({ID}) => {
                                     .map((tollsName) => data.find((item) => item.label === tollsName));
                 
                                 setSelectedTool(matchedToolsAndHardware);
+                                setTypeOfTool(matchedToolsAndHardware[0].type)
                                 setValue("tollsName",fetchedData?.tollsName)
                             }
                             if ( !isUserDir && fetchedData?.directorates && dirOptions.length > 0) {
@@ -116,7 +118,8 @@ const ToolsAndHardwareEdit = ({ID}) => {
                     if (fetchDatas && Array.isArray(fetchDatas)){
                     const option = fetchDatas.map((item)=>({
                         value:item._id,
-                        label:item.tollsName
+                        label:item.tollsName,
+                        type:item.toolsAndHardwareType,
                     }))            
                     setData(option);
                     } 
@@ -183,8 +186,9 @@ const ToolsAndHardwareEdit = ({ID}) => {
                 setLoading(false);  
             } 
 
-        const handleToolsAndHardwareChange=(selected) =>            
-        {
+        const handleToolsAndHardwareChange=(selected) =>{
+            const selectedTool=selected?.type
+            setTypeOfTool(selectedTool)
             setSelectedTool(selected);
             const toolsAndHardwareName = selected.label
             setValue('tollsName',toolsAndHardwareName)
@@ -265,7 +269,14 @@ const ToolsAndHardwareEdit = ({ID}) => {
                             <div className="row ">
                                 <div className="col-sm-6 col-md-6 col-lg-6">
                                         <Form.Group className="mb-3" controlId="StartDate">
-                                            <Form.Label className="fs-5 fw-bolder">Start Date<span className="text-danger">*</span></Form.Label>
+                                           <Form.Label className="fs-5 fw-bolder">
+                                            {typeOfTool?.toLowerCase().includes('software')
+                                                ? 'License Start Date'
+                                                : typeOfTool?.toLowerCase().includes('warranty') || typeOfTool?.toLowerCase().includes('hardware')
+                                                ? 'Warranty Start Date'
+                                                : 'Start Date'}
+                                            <span className="text-danger">*</span>
+                                        </Form.Label>
                                             <Form.Control 
                                             type="date"
                                             {...register("startDate")}                      
@@ -274,7 +285,14 @@ const ToolsAndHardwareEdit = ({ID}) => {
                                 </div>
                                 <div className="col-sm-6 col-md-6 col-lg-6">
                                     <Form.Group controlId="endDate">
-                                    <Form.Label className="fs-5 fw-bolder">End Date<span className="text-danger">*</span></Form.Label>
+                                    <Form.Label className="fs-5 fw-bolder">
+                                        {typeOfTool?.toLowerCase().includes('software')
+                                            ? 'License End Date'
+                                            : typeOfTool?.toLowerCase().includes('warranty') || typeOfTool?.toLowerCase().includes('hardware')
+                                            ? 'Warranty End Date'
+                                            : 'End Date'}
+                                        <span className="text-danger">*</span>
+                                    </Form.Label>
                                     <Form.Control 
                                         type="date"
                                         {...register("endDate")} 

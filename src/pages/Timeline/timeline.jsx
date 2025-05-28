@@ -214,9 +214,9 @@ const Timeline = () => {
         return Phase.some(
             (phase) =>
                 !phase.projectStartDate ||
-                !phase.testCompletedEndDate ||
-                !phase.reportSubmissionEndDate ||
-                !phase.comments
+                !phase.testCompletedEndDate 
+                // !phase.reportSubmissionEndDate ||
+                // !phase.comments
         );
     };
 
