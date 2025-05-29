@@ -225,12 +225,11 @@ const Timeline = () => {
             <Popup show={showModal} handleClose={handleCloseModal} title="Resource Allotment" showFooter={false}>
                 <div>
                     {resourceMapping.length > 0 ? (
-                        <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                            <Table striped bordered hover responsive>
+                        <div style={{ maxHeight: '400px', overflowY: 'auto',maxWidth:'1000px'}}>
+                            <Table striped bordered hover responsive style={{ maxWidth: '1000px', margin: 'auto' }}>
                                 <thead>
                                     <tr>
                                         <th>S. No.</th>
-                                        <th>Employee ID</th>
                                         <th>Name</th>
                                         <th>Designation</th>
                                         <th>Centre</th>
@@ -241,7 +240,6 @@ const Timeline = () => {
                                     {resourceMapping.map((resource, index) => (
                                         <tr key={index}>
                                             <td>{index + 1}</td>
-                                            <td>{resource.empid}</td>
                                             <td>{resource.ename}</td>
                                             <td>{resource.edesg}</td>
                                             <td>{resource.centre}</td>
