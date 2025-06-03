@@ -14,6 +14,7 @@ const ToolsAndHardwareView = ({ID}) => {
         const [loading, setLoading] = useState(false);
         const [data,setData] = useState([])
         const [dirOptions, setDirOptions] = useState([]);
+        const [typeOfTool, setTypeOfTool] = useState()
         const { id } = useParams();
         const projectId = ID || id;
         const navigate = useNavigate();
@@ -43,7 +44,17 @@ const ToolsAndHardwareView = ({ID}) => {
                                 startDate: formattedStartDate,
                                 endDate: formattedEndDate,
                             });
-             
+                            
+                             if (fetchedData?.tollsName && data.length > 0) {
+                                const tollsArray = Array.isArray(fetchedData.tollsName)
+                                    ? fetchedData.tollsName
+                                    : [fetchedData.tollsName];
+
+                                const matchedTools = tollsArray.map(name =>
+                                    data.find(item => item.label === name)
+                                );
+                                setTypeOfTool(matchedTools[0].type)
+                            }
                         }
                     } catch (error) {
                         console.error("Error fetching project details:", error);
@@ -51,26 +62,7 @@ const ToolsAndHardwareView = ({ID}) => {
                 };
             
                 if (projectId) fetchProject();
-            }, [projectId, reset, setValue,data,dirOptions]);
-
-             useEffect(() => {
-                    const fetchDiretoratesData = async () => {
-                      setLoading(true);
-                        try {
-                            const response = await directoratesList();
-                            const options = response.data.data.map((dir) => ({
-                                value: dir,
-                                label: dir,
-                            }));
-                            setDirOptions(options);
-                        } catch (error) {
-                            console.error('Error fetching Directorates list:', error);
-                        } finally {
-                          setLoading(false);
-                        }
-                    };
-                    fetchDiretoratesData();
-                }, []);
+            }, [projectId, reset, setValue,data]);
 
             const fetchData = async () => {
                 setLoading(true);
@@ -80,7 +72,8 @@ const ToolsAndHardwareView = ({ID}) => {
                     if (fetchDatas && Array.isArray(fetchDatas)){
                     const option = fetchDatas.map((item)=>({
                         value:item._id,
-                        label:item.tollsName
+                        label:item.tollsName,
+                        type:item.toolsAndHardwareType,
                     }))            
                     setData(option);
                     } 
@@ -145,7 +138,14 @@ const ToolsAndHardwareView = ({ID}) => {
                             <div className="row ">
                                 <div className="col-sm-6 col-md-6 col-lg-6">
                                     <Form.Group className="mb-3" controlId="StartDate">
-                                        <Form.Label className="fs-5 fw-bolder">Start Date<span className="text-danger">*</span></Form.Label>
+                                       <Form.Label className="fs-5 fw-bolder">
+                                            {typeOfTool?.toLowerCase().includes('software')
+                                                ? 'License Start Date'
+                                                : typeOfTool?.toLowerCase().includes('warranty') || typeOfTool?.toLowerCase().includes('hardware')
+                                                ? 'Warranty Start Date'
+                                                : 'Start Date'}
+                                            <span className="text-danger">*</span>
+                                        </Form.Label>
                                         <Form.Control
                                             type="text"
                                             readOnly 
@@ -155,7 +155,14 @@ const ToolsAndHardwareView = ({ID}) => {
                                 </div>
                                 <div className="col-sm-6 col-md-6 col-lg-6">
                                     <Form.Group controlId="endDate">
-                                    <Form.Label className="fs-5 fw-bolder">End Date<span className="text-danger">*</span></Form.Label>
+                                   <Form.Label className="fs-5 fw-bolder">
+                                        {typeOfTool?.toLowerCase().includes('software')
+                                            ? 'License End Date'
+                                            : typeOfTool?.toLowerCase().includes('warranty') || typeOfTool?.toLowerCase().includes('hardware')
+                                            ? 'Warranty End Date'
+                                            : 'End Date'}
+                                        <span className="text-danger">*</span>
+                                    </Form.Label>
                                     <Form.Control
                                         type="text" 
                                         readOnly

@@ -1,19 +1,19 @@
 .content-body {
   transition: margin-left 0.3s ease-in-out, margin-top 0.3s ease-in-out;
   padding: 20px;
-  background-color: #f9f9f9; /* Light background for content */
-  height: 100vh; /* Ensure it takes full height */
-  overflow-y: auto; /* Scrollable content */
-  margin-top: 20px; /* Adjust the top margin for better spacing */
-  margin-right: 20px; /* Add right margin */
+  background-color: #f7f4f0; 
+  height: 100vh; 
+  overflow-y: auto; 
+  margin-top: 20px; 
+  margin-right: 20px; 
 }
 
 .content-body.expanded {
-  margin-left: 300px; /* When sidebar is expanded */
+  margin-left: 300px; 
 }
 
 .content-body.collapsed {
-  margin-left: 100px; /* When sidebar is collapsed */
+  margin-left: 100px; 
 }
 
 .page-content {

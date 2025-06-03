@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { IoMdAdd } from "react-icons/io";
 import Form from "react-bootstrap/Form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import validationSchema from '../../../validation/validationSchema'
 import { Button, Spinner } from 'react-bootstrap'; 
 import "bootstrap/dist/css/bootstrap.min.css";
+import {getTypeOfWork} from '../../../api/typeOfWorkAPi/typeOfWorkApi'
 import DatePicker from "react-datepicker";
-import { MultiSelect } from "react-multi-select-component";
 import { postPerseonlData } from '../../../api/ProjectDetailsAPI/projectDetailsApi'
 import { postdirectrate, getdirectrate } from '../../../api/directrateAPI/directrate'
 import {postProjectTypeList, getProjectTypeList} from '../../../api/projectTypeListApi/projectTypeListApi'
@@ -42,21 +41,46 @@ const HomePage = () => {
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [showDirectrateModal, setShowDirectrateModal] = useState(false);
   const [projectTypeName, setProjectTypeName] = useState([]); 
+  const [selectedTypeOfWorkOptions, setSelectedTypeOfWorkOptions] = useState([]);
   const [directrateOptions, setDirectrateOptions]= useState([])
   const [error, setError] = useState(null);
   const [directrateName, setDirectrateName] = useState('');
   const [projectTypes, setProjectTypes] = useState([]);
+  const [disableScopeOfWork,setDisableScopeOfWork] =useState()
+  const [typeOfWorkOption,setTypeOfWorkOption] = useState([]);
   const [loading, setLoading] = useState(false); 
   const [fileType, setFileType] = useState(''); 
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+
+  useEffect(()=>{
+    const fetchTypeOfWork = async() =>{
+      try{
+        const response = await getTypeOfWork();
+        if(response.data && Array.isArray(response.data.data)){
+          const option = response.data.data.map((TypeOfWork)=>({
+            value:TypeOfWork._id,
+            label:TypeOfWork.typrOfWork
+          }))
+          setTypeOfWorkOption(option)
+        }else{
+          console.log("Expect an Array")
+        }
+      }catch(error){
+        console.error("Error fetching Type Of Work:");
+      }
+    }
+    fetchTypeOfWork()
+  },[])
 
   
   useEffect(() => {
     
     const fetchProjectTypeList = async () => {
       try {
-        const response = await getProjectTypeList(); 
+        if (selectedTypeOfWorkOptions){
+        const selectedType=selectedTypeOfWorkOptions?.label;
+        const response = await getProjectTypeList({category:selectedType}); 
         
         if (response && Array.isArray(response.data)) {
           const options = response.data.map((projectTypes) => ({
@@ -64,16 +88,20 @@ const HomePage = () => {
             value: projectTypes._id 
           }));
           setProjectTypes(options); 
+          
         } else {
-          console.error("Expected an array in response.data but got:", response);
+          console.error("Expected an array in response.data but got:",);
         }
+      } else{
+         setProjectTypes([]); 
+      }
       } catch (error) {
         console.error("Error fetching device list:");
       }
     };
     
     fetchProjectTypeList();
-  }, []);
+  }, [selectedTypeOfWorkOptions]);
   
   useEffect(() => {
     const fetchDirectrateList = async () => {
@@ -122,12 +150,14 @@ const HomePage = () => {
       secondaryPersonEmail: data.SecondaryEmail,
       primaryPersonEmail: data.PrimaryEmail,
       directrate: data.DirectrateName,
+      typeOfWork: data.typeOfWork,
       serviceLocation: data.ServiceLoction,
       // noOfauditor:data.noOfauditor,
       projectManager:data.projectManager,
       projectType: data.selectedProjectTypes.map(type => type.value),
       workOrder: uploadedFile,
     };
+    console.log(payload)
  
     setLoading(true);
     try{
@@ -151,6 +181,7 @@ const HomePage = () => {
           DirectrateName: '',
           ServiceLoction: '',
           projectManager: '',
+          typeOfWork:null,
           selectedProjectTypes: [],
           uploadedFile:null,
         });
@@ -158,6 +189,8 @@ const HomePage = () => {
           fileInputRef.current.value = "";
         }
         setPreview(null);
+        setValue('typeOfWork',"")
+        setSelectedTypeOfWorkOptions(null)
         setUploadedFile(null);
         setFileType("");
   
@@ -295,6 +328,13 @@ const HomePage = () => {
     navigate(`/home`) 
   }
 
+  const handleTypeOfWorkChange = (selected) =>{
+      setSelectedTypeOfWorkOptions(selected)
+      setDisableScopeOfWork(selected)
+      const selectedString = selected?.label;
+      setValue('typeOfWork',selectedString)
+  }
+
   return (
     <div className="home-page">
         <ToastContainer  position="top-center" autoClose={5000} hideProgressBar={false} />
@@ -330,7 +370,7 @@ const HomePage = () => {
       </Popup>
       <div className="row">
         <div className="col-sm-10 col-md-10 col-lg-10">
-          <h1>Project Details</h1>
+          <h1 className="fw-bolder">Project Details</h1>
         </div>
         <div className="col-sm-2 col-md-2 col-lg-2">
           <Button variant="danger" className='btn btn-success ' onClick={handleBackClick}>
@@ -338,7 +378,7 @@ const HomePage = () => {
           </Button>
         </div>
       </div>
-      <hr />
+      <hr className="my-3" style={{ height: '4px', backgroundColor: '#000', opacity: 1 }}/>
       <div className="container-fluid">
         <div className="row">
           <Form onSubmit={handleSubmit}>
@@ -465,26 +505,61 @@ const HomePage = () => {
                   <div className="col-sm-6 col-md-6 col-lg-6">
                     <Form.Group className="mb-3" controlId="StartDate">
                       <Form.Label className="fs-5 fw-bolder">Start Date<span className="text-danger">*</span></Form.Label>
-                      <Controller
-                        name="startDate"
-                        control={control}
-                        render={({ field }) => <DatePicker {...field} selected={field.value} onChange={(date) => field.onChange(date)} className="form-control" dateFormat="MMMM d, yyyy" placeholderText="Select Start Date" />}
-                      />
-                      {errors.startDate && <p className="text-danger">{errors.startDate.message}</p>}
+                      <div className="row">
+                        <div className="col-sm-11 col-md-11 col-lg-11 ">
+                        <Controller
+                          name="startDate"
+                          control={control}
+                          render={({ field }) => <DatePicker {...field} selected={field.value} onChange={(date) => field.onChange(date)} className="form-control" dateFormat="MMMM d, yyyy" placeholderText="Select Start Date" />}
+                          />
+                        {errors.startDate && <p className="text-danger">{errors.startDate.message}</p>}
+                        </div>
+                      </div>
                     </Form.Group>
                   </div>
                   <div className="col-sm-6 col-md-6 col-lg-6">
                     <Form.Group className="mb-3" controlId="EndDate">
                       <Form.Label className="fs-5 fw-bolder">End Date<span className="text-danger">*</span></Form.Label>
-                      <Controller
-                        name="endDate"
-                        control={control}
-                        render={({ field }) => <DatePicker {...field} selected={field.value} onChange={(date) => field.onChange(date)} className="form-control" dateFormat="MMMM d, yyyy" placeholderText="Select End Date" />}
-                      />
-                      {errors.endDate && <p className="text-danger">{errors.endDate.message}</p>}
+                      <div className="row">
+                          <div className="col-sm-11 col-md-11 col-lg-11 ">
+                          <Controller
+                            name="endDate"
+                            control={control}
+                            render={({ field }) => <DatePicker {...field} selected={field.value} onChange={(date) => field.onChange(date)} className="form-control" dateFormat="MMMM d, yyyy" placeholderText="Select End Date" />}
+                          />
+                          {errors.endDate && <p className="text-danger">{errors.endDate.message}</p>}
+                        </div>
+                      </div>
                     </Form.Group>
                   </div>
                 </div>
+                {disableScopeOfWork &&(
+                <Form.Group className="mb-3" >
+                    <Form.Label className="fs-5 fw-bolder">Scope Of Work<span className="text-danger">*</span></Form.Label>
+                    {projectTypes && Array.isArray(projectTypes) && projectTypes.length > 0 ? (
+                    <Controller
+                      name="selectedProjectTypes"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          {...field}
+                          options={projectTypes} 
+                          isMulti
+                          getOptionLabel={(e) => e.label}
+                          getOptionValue={(e) => e.value}
+                          onChange={(selected) => setValue("selectedProjectTypes", selected)} // Updates the form value
+                          placeholder="Select Project Types"
+                        />
+                      )}
+                    />
+                  ) : (
+                    <div>Loading project types...</div> 
+                  )}
+                  {errors.selectedProjectTypes && (
+                    <div className="text-danger">{errors.selectedProjectTypes.message}</div>
+                  )}
+                </Form.Group>
+                )}
                 <Form.Group className="mb-3" controlId="ProjectValue">
                   <Form.Label className="fs-5 fw-bolder">Project value in Numeric<span className="text-danger">*</span></Form.Label>
                   <Controller
@@ -516,31 +591,26 @@ const HomePage = () => {
                 </Form.Group>
                 {/* <div className="row"> */}
                   {/* <div className="col-sm-10 col-md-10 col-lg-10"> */}
-                    <Form.Group className="mb-3" >
-                      <Form.Label className="fs-5 fw-bolder">Scope Of Work<span className="text-danger">*</span></Form.Label>
-                      {projectTypes && Array.isArray(projectTypes) && projectTypes.length > 0 ? (
-                      <Controller
-                        name="selectedProjectTypes"
+                  <Form.Group className="mb-3">
+                    <Form.Label className="fs-5 fw-bolder">Type Of Work<span className="text-danger">*</span></Form.Label>
+                     <Controller
+                        name="typeOfWork"
                         control={control}
                         render={({ field }) => (
                           <Select
-                            {...field}
-                            options={projectTypes} // Options from API
-                            isMulti // Enables multi-selection
-                            getOptionLabel={(e) => e.label}
-                            getOptionValue={(e) => e.value}
-                            onChange={(selected) => setValue("selectedProjectTypes", selected)} // Updates the form value
-                            placeholder="Select Project Types"
-                          />
+                          {...field}
+                          options={typeOfWorkOption} 
+                          value={selectedTypeOfWorkOptions}
+                          isClearable
+                          isDisabled={loading}
+                          placeholder="Select Type Of Work"
+                          onChange={handleTypeOfWorkChange}
+                        />
                         )}
                       />
-                    ) : (
-                      <div>Loading project types...</div> 
-                    )}
-                    {errors.selectedProjectTypes && (
-                      <div className="text-danger">{errors.selectedProjectTypes.message}</div>
-                    )}
+                       {errors.typeOfWork && <p className="text-danger">{errors.typeOfWork.message}</p>}
                     </Form.Group>
+                  
                   {/* </div> */}
                   {/* <div className="col-sm-2 col-md-2 col-lg-2">
                     <Button variant="success" className="button-middle" onClick={handleShow}><IoMdAdd className="fs-3" /></Button>
@@ -623,8 +693,8 @@ const HomePage = () => {
                 />
               </div>
             </div>
-            <h1 className="pt-5">Contact Details Of Client</h1>
-            <hr></hr>
+            <h1 className="pt-5 fw-bolder">Contact Details Of Client</h1>
+            <hr className="my-3" style={{ height: '4px', backgroundColor: '#000', opacity: 1 }}></hr>
             <div className="row">
               <div className="col-sm-4 col-md-4 col-lg-4">
                 <Form.Group className="mb-3" controlId="fullName">

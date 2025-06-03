@@ -263,7 +263,7 @@ const ProjectMapping = () =>{
                 buttonClass={'btn btn-primary'}
                 onAddNewClick={handleMappingSubmit}
                 disabled={!selectedProject || selectedItems.length === 0}
-                buttonName="Mapping"
+                buttonName="Save"
                 showIcon={false}
                 showMapIcon={true}
                 hideHeader={!selectedProject}

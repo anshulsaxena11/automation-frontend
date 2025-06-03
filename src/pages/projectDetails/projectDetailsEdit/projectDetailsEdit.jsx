@@ -7,6 +7,7 @@ import { getProjectTypeList } from "../../../api/projectTypeListApi/projectTypeL
 import { getdirectrate } from "../../../api/directrateAPI/directrate";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import {getTypeOfWork} from '../../../api/typeOfWorkAPi/typeOfWorkApi'
 import { useNavigate } from 'react-router-dom';
 import PreviewModal from '../../../components/previewfile/preview';  
 import Select from "react-select";
@@ -19,6 +20,7 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
     const [file, setFile] = useState(null);
     const [projectTypes, setProjectTypes] = useState([]);
     const [selectedOptions, setSelectedOptions] = useState([]);
+    const [selectedTypeOfWorkOptions, setSelectedTypeOfWorkOptions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [filePreviewUrl, setFilePreviewUrl] = useState("");
     const [showModal, setShowModal] = useState(false);
@@ -26,22 +28,55 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
     const [directrateList, setDirectrateList] = useState([]);
     const [previewFileType, setPreviewFileType] = useState('');
     const [selectedDirectorate, setSelectedDirectorate] = useState(null);
+     const [typeOfWorkOption,setTypeOfWorkOption] = useState([]);
 
     const { id } = useParams();
     const projectId = ID || id;
     const navigate = useNavigate();
 
+    useEffect(()=>{
+        const fetchTypeOfWork = async() =>{
+          try{
+            const response = await getTypeOfWork();
+            if(response.data && Array.isArray(response.data.data)){
+              const option = response.data.data.map((TypeOfWork)=>({
+                value:TypeOfWork._id,
+                label:TypeOfWork.typrOfWork
+              }))
+              setTypeOfWorkOption(option)
+            }else{
+              console.log("Expect an Array")
+            }
+          }catch(error){
+            console.error("Error fetching Type Of Work:");
+          }
+        }
+        fetchTypeOfWork()
+      },[])
+
     useEffect(() => {
         const fetchProjectTypes = async () => {
             try {
-                const response = await getProjectTypeList();
-                setProjectTypes(response?.data || []);
+                if(selectedTypeOfWorkOptions){
+                    let selectedType
+                    if (Array.isArray(selectedTypeOfWorkOptions)){
+                         selectedType =selectedTypeOfWorkOptions[0]?.label
+                    }
+                    else{
+                        selectedType = selectedTypeOfWorkOptions.label
+                    }
+                    const response = await getProjectTypeList({category:selectedType});
+                    setProjectTypes(response?.data || []);
+                }
+                else{
+                    setProjectTypes([])
+                }
             } catch (error) {
                 console.error("Error fetching project types:");
             }
         };
         fetchProjectTypes();
-    }, []);
+    }, [selectedTypeOfWorkOptions,]);
 
         
     
@@ -100,16 +135,24 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
                     }));
                     setSelectedOptions(selectedProjectTypes);
 
-                        const selectedDirectrate = Array.isArray(fetchedData.directrate)
-                        ? fetchedData.directrate
-                        : [fetchedData.directrate];
+                    const selectedDirectrate = Array.isArray(fetchedData.directrate)
+                    ? fetchedData.directrate
+                    : [fetchedData.directrate];
 
-                            const matchedDirectrate = selectedDirectrate.map(type =>({
-                                label:type
-                            })
-                              
-                            );
-                            setSelectedDirectorate(matchedDirectrate || null);
+                    const matchedDirectrate = selectedDirectrate.map(type =>({
+                        label:type
+                    }));
+                    setSelectedDirectorate(matchedDirectrate || null);
+
+                    const selectedTypeOfWork = Array.isArray(fetchedData.typeOfWork) 
+                    ? fetchedData.typeOfWork
+                    : [fetchedData.typeOfWork]
+
+                    const matchedTypeOfWork =  selectedTypeOfWork.map(type=>({
+                        label:type
+                    }));
+                
+                    setSelectedTypeOfWorkOptions(matchedTypeOfWork || null);
                       
                 }
             } catch (error) {
@@ -144,6 +187,7 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
             const secondaryPrsonPhoneNo = formData.secondaryPrsonPhoneNo || getValues("secondaryPrsonPhoneNo")
             const primaryPersonEmail = formData.primaryPersonEmail || getValues("primaryPersonEmail")
             const secondaryPersonEmail = formData.secondaryPersonEmail || getValues("secondaryPersonEmail")
+            const typeOfWork = formData.typeOfWork || getValues('typeOfWork')
             let projectTypeIds = [];
             if (Array.isArray(projectType) && projectType.every(item => item._id)) {
                 projectTypeIds = projectType.map(item => item._id);
@@ -169,8 +213,8 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
             formDataToSubmit.append("secondaryPrsonPhoneNo",secondaryPrsonPhoneNo)
             formDataToSubmit.append("primaryPersonEmail",primaryPersonEmail)
             formDataToSubmit.append("secondaryPersonEmail",secondaryPersonEmail)
+            formDataToSubmit.append("typeOfWork",typeOfWork)
 
-       
             if (file && file instanceof Blob) {
                 formDataToSubmit.append("workOrder", file, file.name);
             } 
@@ -193,7 +237,6 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
     const handleBackClick = ()=>{
         navigate(`/home`) 
       }
-
       const handleProjectTypeChange = (selected) => {
         setSelectedOptions(selected);
         const selectedValues = selected.map((option) => option.value);
@@ -225,12 +268,18 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
         setShowModal(true);
     };
 
+    const handleTypeOfWorkChange = (selected) =>{
+        setSelectedTypeOfWorkOptions(selected)
+        setSelectedOptions([])
+        const selectedString = selected && selected.label ? String(selected.label) : '';
+        setValue('typeOfWork',selectedString)
+    }
     return (
         <div className="container-fluid">
             <ToastContainer  position="top-center" autoClose={5000} hideProgressBar={false} />
             <div className="row">
                 <div className="col-sm-10 col-md-10 col-lg-10">
-                    <h1>Update Project Details</h1>
+                    <h1 className="fw-bolder">Update Project Details</h1>
                 </div>
                 <div className="col-sm-2 col-md-2 col-lg-2">
                     <Button variant="danger" className='btn btn-success ' onClick={handleBackClick}>
@@ -238,7 +287,7 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
                     </Button>
                 </div>
             </div>
-            <hr></hr>
+            <hr className="my-3" style={{ height: '4px', backgroundColor: '#000', opacity: 1 }}></hr>
             <form onSubmit={handleSubmit(onSubmit)} className="edit-project-form">
                 <div className="row pt-4" >
                     <div className="col-sm-4 col-md-4 col-lg-4">
@@ -342,8 +391,18 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
                                  </Form.Group>
                             </div>
                         </div>
+                         <Form.Group>
+                         <Form.Label className="fs-5 fw-bolder ">Scope Of Work<span className="text-danger">*</span></Form.Label>
+                         <Select
+                            isMulti
+                            name="projectType"
+                            options={projectTypeOptions}
+                            value={selectedOptions} 
+                            onChange={handleProjectTypeChange} 
+                        />
+                        </Form.Group>
                         <Form.Group>
-                            <Form.Label className="fs-5 fw-bolder">Project value in Numeric<span className="text-danger">*</span></Form.Label>
+                            <Form.Label className="fs-5 fw-bolder pt-3">Project value in Numeric<span className="text-danger">*</span></Form.Label>
                             <Form.Control 
                                 type="number" 
                                 {...register("projectValue")} 
@@ -366,13 +425,12 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
                             />
                         </Form.Group>
                         <Form.Group>
-                         <Form.Label className="fs-5 fw-bolder pt-3">Scope Of Work<span className="text-danger">*</span></Form.Label>
+                         <Form.Label className="fs-5 fw-bolder pt-3">Type Of Work<span className="text-danger">*</span></Form.Label>
                          <Select
-                            isMulti
-                            name="projectType"
-                            options={projectTypeOptions}
-                            value={selectedOptions} 
-                            onChange={handleProjectTypeChange} 
+                            name="TypeOfWork"
+                            options={typeOfWorkOption}
+                            value={selectedTypeOfWorkOptions} 
+                            onChange={handleTypeOfWorkChange} 
                         />
                         </Form.Group>
                         <Form.Group>
@@ -413,8 +471,8 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
                         />
                     </div>
                 </div>
-                <h1 className="pt-5">Contact Details Of Client</h1>
-                <hr></hr>
+                <h1 className="pt-5 fw-bolder">Contact Details Of Client</h1>
+                <hr className="my-3" style={{ height: '4px', backgroundColor: '#000', opacity: 1 }}></hr>
                 <div className="row">
                     <div className="col-sm-4 col-md-4 col-lg-4">
                     <Form.Group>

@@ -24,6 +24,7 @@ const validationSchema = yup.object({
   ProjectValue: yup.number().positive().required("Project Value is required"),
   ServiceLoction: yup.string().required("Service Location is required"),
   DirectrateName: yup.string().required("Directrate Name is required"),
+  typeOfWork: yup.string().required("Type Of Work Required"),
   PrimaryFullName: yup.string().required("Primary Full Name is required"),
   SecondaryFullName: yup.string(),
   PrimaryPhoneNo: yup.string().matches(/^\d{10}$/, "Primary Phone Number must be 10 digits").required("Primary Phone Number is required"),
