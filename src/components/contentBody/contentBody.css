@@ -4,16 +4,14 @@
   background-color: #f7f4f0; 
   height: 100vh; 
   overflow-y: auto; 
-  margin-top: 20px; 
-  margin-right: 20px; 
 }
 
 .content-body.expanded {
-  margin-left: 300px; 
+  margin-left: 250px; 
 }
 
 .content-body.collapsed {
-  margin-left: 100px; 
+  margin-left: 50px; 
 }
 
 .page-content {
