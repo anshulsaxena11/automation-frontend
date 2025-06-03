@@ -379,40 +379,40 @@ const ReportPdfGenerator = () => {
                         <Table striped bordered hover>
                           <thead>
                             <tr>
-                              <th colSpan={2} >
+                              <th colSpan={2} style={{ backgroundColor:"#b6dde8" }}>
                                 Vulnerability No {index + 1}
                               </th>
                             </tr>
                           </thead>
                           <tbody>
                             <tr>
-                              <td>Vulnerability Name/Type</td>
+                              <td style={{ backgroundColor:"#b6dde8" }}>Vulnerability Name/Type</td>
                               <td>{item.vulnerabilityName}</td>
                             </tr>
                             <tr>
-                              <td>Severity</td>
+                              <td style={{ backgroundColor:"#b6dde8" }}>Severity</td>
                               <td style={{ backgroundColor: bgColor, color: textColor, fontWeight: "bold" }}>
                                 {item.sevirty}
                               </td>
                             </tr>
                             <tr>
-                              <td>Description</td>
+                              <td style={{ backgroundColor:"#b6dde8" }}>Description</td>
                               <td>{item.description}</td>
                             </tr>
                             <tr>
-                              <td>Path</td>
+                              <td style={{ backgroundColor:"#b6dde8" }}>Path</td>
                               <td>{item.path}</td>
                             </tr>
                             <tr>
-                              <td>Vulnerable Parameter</td>
+                              <td style={{ backgroundColor:"#b6dde8" }}>Vulnerable Parameter</td>
                               <td>{item.vulnerableParameter}</td>
                             </tr>
                             <tr>
-                              <td>References</td>
+                              <td style={{ backgroundColor:"#b6dde8" }}>References</td>
                               <td>{item.references}</td>
                             </tr>
                             <tr>
-                              <td>Proof of Concept and Steps of Verification of Vulnerability</td>
+                              <td style={{ backgroundColor:"#b6dde8" }}>Proof of Concept and Steps of Verification of Vulnerability</td>
                               <td>
                                 {item.proofOfConcept && item.proofOfConcept.length > 0 ? (
                                   <ul>
@@ -428,8 +428,8 @@ const ReportPdfGenerator = () => {
                                               src={proof.proof} 
                                               alt={`Proof of Concept ${index + 1}`} 
                                               style={{
-                                                width: '800px',  
-                                                height: '400px', 
+                                                width: '600px',  
+                                                height: '200px', 
                                                 objectFit: 'cover', 
                                                 border: '1px solid #ccc',
                                                 marginTop: '10px'
@@ -448,7 +448,7 @@ const ReportPdfGenerator = () => {
                               </td>
                             </tr>
                             <tr>
-                              <td>Recommendation</td>
+                              <td style={{ backgroundColor:"#b6dde8" }}>Recommendation</td>
                               <td>{item.recomendation}</td>
                             </tr>
                           </tbody>

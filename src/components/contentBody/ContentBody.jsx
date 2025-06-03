@@ -22,6 +22,7 @@ import ToolsAndHardwarelist from'../../pages/toolsandHardware/ToolsAndHardwareLi
 import ToolsAndHardwareEdit from '../../pages/toolsandHardware/ToolsAndHardwareEdit/ToolsAndHardwareEdit.jsx'
 import ToolsAndHardwareView from '../../pages/toolsandHardware/toolsAndHardwareView/TollAndHardwareView.jsx'
 import TimelineEvent from '../../pages/Timeline/timeline.jsx'
+import PieChart from "../../pages/charts/piechartscomponent.jsx"
 import './contentBody.css'
 
 const ContentBody = ({ isSidebarExpanded }) => {
@@ -51,6 +52,7 @@ const ContentBody = ({ isSidebarExpanded }) => {
           <Route path="/ProjectDetails" element={<Home />} />
           <Route path="/projectDetails/:id" element={<ProjectDetailsView />} />
           <Route path="/projectDetailsEdit/:id" element={<ProjectDetailsEdit />} />
+          <Route path="/piechart" element={<PieChart />} />
           <Route path="/report" element={<ReportList />} />
           <Route path="/newReport" element={<Report />} />
           <Route path="/newReportView/:id" element={<ReportView />} />

@@ -24,6 +24,7 @@ import { saveAs } from "file-saver";
 import dayjs from 'dayjs';
 import { Chart } from 'chart.js';
 
+
 // Helper to safely return string or fallback
 const safeText = (text) => (text ? String(text) : "—");
 const pageFooter = new Footer({
@@ -78,6 +79,7 @@ const fetchImageAsUint8Array = async (url) => {
 };
 
 const MSWordPreview = ({ fullReport, projectDetailsReport }) => {
+  
   const [showPreview, setShowPreview] = useState(false);
 
 
@@ -91,40 +93,74 @@ const MSWordPreview = ({ fullReport, projectDetailsReport }) => {
       
 
   const generateDocument = async () => {
+
+    
     try {
       const watermarkUrl = "/images/Confidential.png";
       const watermarkData = await fetchImageAsUint8Array(watermarkUrl);
 
-      // Watermark header
-      const watermarkHeader = watermarkData
-        ? new Header({
+
+const logoUrl = "/images/STPI_Preview.png"; // Replace with your actual logo path
+const logoData = await fetchImageAsUint8Array(logoUrl);
+
+// Combined header with logo and watermark
+const watermarkHeader = (watermarkData && logoData)
+  ? new Header({
+      children: [
+        // Logo at the top-left
+        new Paragraph({
+          children: [
+            new ImageRun({
+              data: logoData,
+              transformation: {
+                width: 150, // Adjust logo size as needed
+                height: 70,
+              },
+            }),
+          ],
+        }),
+        new Paragraph({
             children: [
-              new Paragraph({
-                children: [
-                  new ImageRun({
-                    data: watermarkData,
-                    transformation: {
-                      width: 700,
-                      height: 1000,
-                    },
-                    floating: {
-                      horizontalPosition: {
-                        align: "center",
-                      },
-                      verticalPosition: {
-                        align: "center",
-                      },
-                      wrap: {
-                        type: "none",
-                      },
-                      behindDocument: true,
-                    },
-                  }),
-                ],
+              new TextRun({
+                 text: `${projectDetailsReport?.[0]?.projectName} ROUND-${safeText(fullReport?.[0]?.round)} REPORT,${safeText(projectDetailsReport?.[0]?.serviceLocation)}`, 
+                font: "Cambria",
+                size: 28,
+                color:"000000",
               }),
             ],
-          })
-        : new Header({ children: [] });
+            heading: "Heading1",
+            spacing: { after: 500 },
+            alignment: AlignmentType.CENTER,
+          }),
+        // Watermark centered behind content
+        new Paragraph({
+          children: [
+            new ImageRun({
+              data: watermarkData,
+              transformation: {
+                width: 700,
+                height: 1000,
+              },
+              floating: {
+                horizontalPosition: {
+                  align: "center",
+                },
+                verticalPosition: {
+                  align: "center",
+                },
+                wrap: {
+                  type: "none",
+                },
+                behindDocument: true,
+              },
+            }),
+          ],
+        }),
+      ],
+    })
+  : new Header({ children: [] });
+
+
         const vaptImageUrl = "/images/vapt.png";
         const vaptImageData = await fetchImageAsUint8Array(vaptImageUrl);
         const ListOfvaptImageUrl = "/images/Listofvapt.jpg";
@@ -142,7 +178,7 @@ const MSWordPreview = ({ fullReport, projectDetailsReport }) => {
               new TextRun({
                 text: "Table of Contents",
                 font: "Cambria",
-                size: 26,
+                size: 35,
               }),
             ],
             heading: "Heading1",
@@ -152,7 +188,7 @@ const MSWordPreview = ({ fullReport, projectDetailsReport }) => {
           new Paragraph({
             children: [
               new TextRun({
-                text: "page",
+                text: "Page",
                 font: "Cambria",
                 size: 26,
               }),
@@ -570,7 +606,7 @@ const MSWordPreview = ({ fullReport, projectDetailsReport }) => {
               }),
             ],
             heading: "Heading1",
-            alignment: AlignmentType.LEFT,
+            alignment: AlignmentType.RIGHT,
           }),
           new Paragraph({
             children: [
@@ -865,7 +901,7 @@ const MSWordPreview = ({ fullReport, projectDetailsReport }) => {
               }),
             ],
             heading: "Heading1",
-            alignment: AlignmentType.LEFT,
+            alignment: AlignmentType.RIGHT,
           }),
           new Paragraph({
             children: [
@@ -1272,7 +1308,7 @@ const MSWordPreview = ({ fullReport, projectDetailsReport }) => {
               }),
             ],
             heading: "Heading1",
-            alignment: AlignmentType.LEFT,
+            alignment: AlignmentType.RIGHT,
           }),
           new Paragraph({
             children: [
@@ -1438,7 +1474,7 @@ const MSWordPreview = ({ fullReport, projectDetailsReport }) => {
               }),
             ],
             heading: "Heading1",
-            alignment: AlignmentType.LEFT,
+            alignment: AlignmentType.RIGHT,
           }),
           new Paragraph({
             children: [
@@ -2407,7 +2443,7 @@ const MSWordPreview = ({ fullReport, projectDetailsReport }) => {
             }),
           ],
           heading: "Heading1",
-          alignment: AlignmentType.LEFT,
+          alignment: AlignmentType.RIGHT,
         }),
         new Paragraph({
           children: [
@@ -2829,24 +2865,49 @@ const MSWordPreview = ({ fullReport, projectDetailsReport }) => {
             spacing: { after: 300 },
           })
         );
+          let bgColor = "inherit";
+          if (item.sevirty === "High") {
+                      bgColor = "#FF0000";
+                    } else if (item.sevirty === "Medium") {
+                      bgColor = "#FFA500";
+                    } else if (item.sevirty === "Low") {
+                      bgColor = "#008000";
+                    }
+                  
 
         const rows = [
-          ["Vulnerability Name/Type", safeText(item.vulnerabilityName)],
-          ["Severity", safeText(item.sevirty)],
-          ["Description", safeText(item.description)],
-          ["IMPACT",safeText(item.impact)],
-          ["Path", safeText(item.path)],
-          ["Vulnerable Parameter", safeText(item.vulnerableParameter)],
-          ["References", safeText(item.references)],
-          ["Recomendation",safeText(item.recomendation)]
-        ].map(([title, value]) =>
-          new TableRow({
-            children: [
-              new TableCell({ children: [new Paragraph(title)] }),
-              new TableCell({ children: [new Paragraph(value)] }),
-            ],
-          })
-        );
+  ["Vulnerability Name/Type", safeText(item.vulnerabilityName)],
+  ["Severity", safeText(item.sevirty)],
+  ["Description", safeText(item.description)],
+  ["IMPACT", safeText(item.impact)],
+  ["Path", safeText(item.path)],
+  ["Vulnerable Parameter", safeText(item.vulnerableParameter)],
+  ["References", safeText(item.references)],
+  ["Recomendation", safeText(item.recomendation)],
+].map(([title, value]) =>
+  new TableRow({
+    children: [
+      new TableCell({
+        children: [new Paragraph(title)],
+        shading: {
+          type: ShadingType.CLEAR,
+          color: "auto",
+          fill: "#b6dde8", // light blue background for titles
+        },
+      }),
+      new TableCell({
+        children: [new Paragraph(value)],
+        ...(title === "Severity" && {
+          shading: {
+            type: ShadingType.CLEAR,
+            color: "auto",
+            fill: bgColor, // red background for severity
+          },
+        }),
+      }),
+    ],
+  })
+);
 
         if (Array.isArray(item.proofOfConcept) && item.proofOfConcept.length > 0) {
           const proofParagraphs = [];
@@ -2870,8 +2931,8 @@ const MSWordPreview = ({ fullReport, projectDetailsReport }) => {
                       new ImageRun({
                         data: imageData,
                         transformation: {
-                          width: 500,
-                          height: 250,
+                          width: 300,
+                          height: 150,
                         },
                       }),
                     ],
@@ -2890,7 +2951,11 @@ const MSWordPreview = ({ fullReport, projectDetailsReport }) => {
             new TableRow({
               children: [
                 new TableCell({
-                  children: [new Paragraph("Proof of Concept")],
+                  children: [new Paragraph("Proof of Concept")],shading: {
+                    type: ShadingType.CLEAR,
+                    color: "auto",
+                    fill: "#b6dde8", // light gray background
+                  },
                 }),
                 new TableCell({ children: proofParagraphs }),
               ],
