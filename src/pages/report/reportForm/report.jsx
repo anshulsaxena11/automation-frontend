@@ -2,12 +2,12 @@ import React, { useState, useEffect, useRef  } from 'react';
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm, Controller } from "react-hook-form";
 import reportValidationSchema from '../../../validation/reportValidationSchema';
-import {postReport} from '../../../api/reportApi/reportApi'
+import {postReport,getVulListSpecific} from '../../../api/reportApi/reportApi'
 import 'react-quill/dist/quill.snow.css'; 
 import Form from 'react-bootstrap/Form';
 import { useNavigate } from 'react-router-dom';
 import {getDeviceList} from '../../../api/deviceListAPI/decicelistApi'
-import { Button, Spinner } from 'react-bootstrap';
+import { Button, Spinner, Table } from 'react-bootstrap';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { getVulnerabilityList } from '../../../api/vulnerabilityApi/vulnerability'
@@ -16,21 +16,25 @@ import PreviewModal from "../../../components/previewfile/preview"
 import { PiImagesSquareBold } from "react-icons/pi";
 import { getProjectNameList, getProjectTypeList } from '../../../api/ProjectDetailsAPI/projectDetailsApi'
 import {getAllRound, postAddRound} from '../../../api/roundApi/round'
-import { IoIosSave } from "react-icons/io";
+import FormComponent from '../../../components/formComponent/formcomponent'
+import PopupForm from '../../../components/PopBoxForm/PopupBoxForm'
+import { IoIosSave,IoMdAdd } from "react-icons/io";
 import { TiArrowBack } from "react-icons/ti";
 import'./report.css'
 
 const ReportPage = () => {
-  const { control, handleSubmit, watch, formState: { errors }, setValue } = useForm({
+  const { control, handleSubmit, watch, formState: { errors }, setValue,getValues } = useForm({
     resolver: yupResolver(reportValidationSchema),
   
   });
   
   const [vulnerabilityOptions, setVulnerabilityOptions] = useState([]);
   const [selectedVulnerability, setSelectedVulnerability] = useState(null);
+  const [showModalVul, setShowModalVul] = useState(false);
   const [searchQuery, setSearchQuery] = useState(""); 
   const [ProjectType, setProjectType] = useState("");
   const [round, setRound] = useState('');
+  const [addVulnerability,setAddVulnerability] = useState();
   const [device, setDevice] = useState([]);
   const [vulnerabilityData, setVulnerabilityData] = useState([]);
   const [loading, setLoading] = useState(false); 
@@ -38,6 +42,7 @@ const ReportPage = () => {
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [ProjectName, setProjectName] = useState([]);
   const [selectedProjectName, setSelectedProjectName] = useState(""); 
+  const [selectedProjectNameAdd,setSelectedProjectNameAdd] = useState('')
   const [showPreview, setShowPreview] = useState(false);
   const severityOptions = [
     { value: "High", label: "High" },
@@ -54,6 +59,44 @@ const ReportPage = () => {
   const [disableDevices, setDisableDevices] = useState("")
   const fileInputRefs = useRef([]); 
   const [roundOptions, setRoundOptions] = useState([]);
+  const [addDescription,setAddDescription] = useState("")
+  const [addImpact,setAddImpact] = useState("")
+  const [addReferance,setAddReferance] = useState("")
+  const [addRecomendation,setAddRecomendation] = useState("")
+  const [addSevirity,setAddSevirity] = useState("")
+  const [showModal, setShowModal] = useState(false); 
+  const [showModalVulList, setShowModalVulList] = useState(false); 
+  const [showVulLisst,setShowVulList] = useState([])
+  const roundValue = watch("round");
+  const name = watch("name");
+  const deviceValue = watch("device");
+  const ipAddress = watch('ipAddress')
+  
+  useEffect(() => {
+  const fetchVulList = async () => {
+    setLoading(true);
+    try {
+      if (selectedProjectName || roundValue || name || selectedProjectNameAdd || ipAddress || deviceValue) {
+        const response = await getVulListSpecific({
+          projectName: selectedProjectName,
+          projectType: selectedProjectNameAdd,
+          round: roundValue,
+          devices: deviceValue,
+          Name: name,
+          ipAddress: ipAddress,
+        });
+        console.log(response.data)
+        setShowVulList(response.data); 
+      }
+    } catch (error) {
+      console.error("Error fetching vulnerabilities:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchVulList();
+}, [selectedProjectName, roundValue, name, selectedProjectNameAdd, deviceValue, ipAddress])
 
   useEffect(() => {
     loadRounds();
@@ -63,10 +106,9 @@ const ReportPage = () => {
     const fetchVulnerabilities = async () => {
       setLoading(true);  // Start loading
       try {
-        if (ProjectType && (ProjectType !== "Devices" || selectDevice)){
-          const projectType = ProjectType === 'Devices' && selectDevice ? selectDevice.label : ProjectType;
+        if (ProjectType && (ProjectType !== "Network Devices" || selectDevice)){
+          const projectType = ProjectType === 'Network Devices' && selectDevice ? selectDevice.label : ProjectType;
           const response = await getVulnerabilityList({ProjectType:projectType}); 
-          console.log(response)
           const vulnerabilities = response.data;
           setVulnerabilityData(vulnerabilities)
   
@@ -74,14 +116,13 @@ const ReportPage = () => {
             value: vuln._id,  
             label: vuln.vulnerabilityTypes,  
           }));
-          console.log(options)
   
           setVulnerabilityOptions(options);   
         } else {
           setVulnerabilityOptions()
         }
       } catch (error) {
-        console.error('Error fetching vulnerabilities:', error);
+        console.error('Error fetching vulnerabilities:');
       } finally {
         setLoading(false); 
       }
@@ -159,7 +200,7 @@ const ReportPage = () => {
         }
       } catch (err) {
         setError(`Failed to fetch project types: ${err.message}`);
-        console.error("Error fetching project types:", err);
+        console.error("Error fetching project types:");
       } finally {
         setLoading(false);
       }
@@ -215,7 +256,6 @@ const ReportPage = () => {
       const res = await postAddRound();
       loadRounds();
       toast.success(res.data.message || 'Round added successfully!');
-      console.log('New Round:', res.data.data); 
       return res.data.data;
     } catch (err) {
         toast.error(err.response?.data?.message || 'Failed to add round');
@@ -278,6 +318,8 @@ const handleFileChange = (index, event) => {
     const payload={
       projectName:data.selectedProjectName,
       projectType:data.ProjectType,
+      Name:data.name,
+      ipAddress:data.ipAddress,
       round:data.round,
       vulnerabilityName:data.selectedVulnerability,
       sevirty:data.severity,
@@ -294,22 +336,23 @@ const handleFileChange = (index, event) => {
     
     setLoading(true);
     try{
-      await postReport(payload);
+    await postReport(payload);
       setValue("selectedVulnerability", null);
-      setValue("ProjectType",null);
+      // setValue("ProjectType",null);
       setValue("Description", "");
       setValue("Impact", "");
-      setValue("device",null)
+      // setValue("device",null)
       setValue("VulnerableParameter", "");
       setValue("Referance", "");
       setValue("Recomendation", "");
       setValue("severity", null);
-      setValue("selectedProjectName", null)
+      // setValue("selectedProjectName", null)
       setValue("Path","")
-      setValue("round",null)
+      // setValue("round",null)
       setRoundOptions(null)
       setSelectedVulnerability(null);
-      setSelectDevice(null);
+      // setSelectDevice(null);
+      setShowModalVul(false)
       setProofOfConcepts([
         { text: "", file: null, preview: null },
         { text: "", file: null, preview: null },
@@ -322,7 +365,8 @@ const handleFileChange = (index, event) => {
         className: 'custom-toast custom-toast-success',
       });
     } catch(error){
-      toast.error('Failed to submit the form.', {
+      const message = error?.response?.data?.message || "Something went wrong";
+      toast.error(message, {
         className: 'custom-toast custom-toast-error',
       });
     }
@@ -364,10 +408,177 @@ const handleFileChange = (index, event) => {
   const handleBackClick = ()=>{
     navigate(`/report`) 
   }
-  
+
+  const handleShow = () => {
+    setShowModal(true); 
+  };
+   const handleClose = () => {
+    setShowModal(false); 
+  };
+
+   const handleInputChange = (e) => {
+    setAddVulnerability(e.target.value);
+  };
+  const handleSevirity =(selected) =>{
+    setAddSevirity(selected?.label)
+  }
+  const handleDiscription=(e) =>{
+    setAddDescription(e.target.value)
+  }
+   const handleImpact=(e) =>{
+    setAddImpact(e.target.value)
+
+  }
+  const handleReferance=(e) =>{
+    setAddReferance(e.target.value)
+  }
+  const handleRecomendation=(e) =>{
+    setAddRecomendation(e.target.value)
+  }
+
+  const handeleVulnabilitySubmit = async()=>{
+    const payload = {
+      projectName:selectedProjectNameAdd,
+      devices:selectDevice?.label,
+      vulnerabilityTypes:addVulnerability,
+      severity:addSevirity,
+      description:addDescription,
+      impact:addImpact,
+      recommendation:addRecomendation,
+      references:addReferance
+
+    }
+
+    console.log(payload,'payload')
+
+  }
+ const handleShowModal = () => {
+  const selectedProject = getValues("selectedProjectName");
+  const selectedRound = getValues("round");
+  const selectedDevice = getValues("device");
+  const selectedProjectType = getValues("ProjectType");
+  const enteredName = getValues("name");
+  const ipAddress = getValues('ipAddress')
+    if (selectedProject && selectedRound && selectedDevice && selectedProjectType && enteredName && ipAddress) {
+      setShowModalVul(true);
+    } else {
+      toast.error('All field must be filed', {
+        className: 'custom-toast custom-toast-error',
+      });
+    }
+  }
+
+  const handleShowModalVulList =()=>{
+    const selectedProject = getValues("selectedProjectName");
+    const selectedRound = getValues("round");
+    const selectedDevice = getValues("device");
+    const selectedProjectType = getValues("ProjectType");
+    const enteredName = getValues("name");
+    const ipAddress = getValues('ipAddress')
+    if (selectedProject && selectedRound && selectedDevice && selectedProjectType && enteredName && ipAddress) {
+      setShowModalVulList(true)
+    }
+    else{
+      toast.error('All field must be filed', {
+        className: 'custom-toast custom-toast-error',
+      });
+    }
+  }
+
+  const handleCloseModal = () => setShowModalVulList(false);
   return (
     <div className="report-page">
      <ToastContainer  position="top-center" autoClose={5000} hideProgressBar={false} />
+     <PopupForm show={showModalVulList} handleClose={handleCloseModal} title="Vulnerability List" showFooter={false}>
+        <div>
+          {showVulLisst.length > 0 ? (
+              <div style={{ maxHeight: '400px', overflowY: 'auto',maxWidth:'1000px'}}>
+                <Table striped bordered hover responsive style={{ maxWidth: '1000px', margin: 'auto' }}>
+                  <thead>
+                      <tr>
+                        <th>S.No</th>
+                        <th>Vulnerability Name</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                    {showVulLisst.map((vulnerabilityName, index) => (
+                      <tr key={index}>
+                        <td>{index + 1}</td>
+                        <td>{vulnerabilityName.vulnerabilityName}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </Table>
+            </div>
+          ):(
+            <p>No Vulnerability mapped for this project.</p>
+          )}
+        </div>
+     </PopupForm>
+     <PopupForm
+         show={showModal}
+        handleClose={handleClose}
+        title="Add Vulnerability Name/Type"   
+        showFooter={true}      
+        footerText="Close" 
+        handleAdd={handeleVulnabilitySubmit}    
+      >     
+       <FormComponent
+          label="Project Type" 
+          value={selectedProjectNameAdd} 
+          readonly
+          disabled
+        />
+         {disableDevices === "Network Devices" && (
+          <FormComponent
+            label="Devices" 
+            value={selectDevice?.label} 
+            readonly
+            disabled
+            // onChange={handleDirectrateInputChange}
+          />
+         )}
+         <FormComponent
+            label="Vulnerability Name/Type" 
+            placeholder="Add Vulnerability Name/Type"
+            value={addVulnerability} 
+            onChange={handleInputChange}
+          />
+          <Form.Group>
+            <Form.Label>Sevirity</Form.Label>
+            <Select
+              options={severityOptions}
+              placeholder="Select severity"
+              onChange={handleSevirity}
+              isClearable
+            />
+          </Form.Group>
+          <FormComponent
+            label="Description" 
+            placeholder="Add Description"
+            value={addDescription} 
+            onChange={handleDiscription}
+          />
+           <FormComponent
+            label="Impact" 
+            placeholder="Add Impact"
+            value={addImpact} 
+            onChange={handleImpact}
+          />
+          
+          <FormComponent
+            label="Referance" 
+            placeholder="Add Referance"
+            value={addReferance} 
+            onChange={handleReferance}
+          />
+          <FormComponent
+            label="Recomendation" 
+            placeholder="Add ReferaRecomendationnce"
+            value={addRecomendation} 
+            onChange={handleRecomendation}
+          />
+      </PopupForm>
      <div className='row'>
       <div className='col-sm-10 col-md-10 col-lg-10 '>
         <h1>Report Page</h1>
@@ -443,26 +654,21 @@ const handleFileChange = (index, event) => {
                   />
                   {errors.round && <p className="text-danger">{errors.round.message}</p>}
                 </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label className="fs-5 fw-bolder">Severity<span className="text-danger">*</span></Form.Label>
-                  <Controller
-                    name ="severity"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                      {...field}
-                      value={severityOptions.find((option) => option.value === field.value)}
-                      options={severityOptions}
-                      placeholder="Select severity"
-                      onChange={(selectedOption) => {
-                        field.onChange(selectedOption ? selectedOption.value : "");
-                      }}
-                      isClearable
-                    />
-                    )}
-                  />
-                   {errors.severity && <p className="text-danger">{errors.severity.message}</p>}
-                </Form.Group>
+                {disableDevices === "Network Devices" && (
+                <Form.Group>
+                    <Form.Label className="fs-5 fw-bolder">Name<span className="text-danger">*</span>
+                    </Form.Label>
+                     <Controller
+                        name="name"
+                        control={control}
+                        render={({field})=>(
+                          <input {...field} className="form-control"  placeholder="Enter Name"/>
+                        )}
+                      />
+                      {errors.name && <p className="text-danger">{errors.name.message}</p>}
+                  </Form.Group>
+                )}
+                
               </div>
               <div className="col-sm-6 col-md-6 col-lg-6">
               <Form.Group className="mb-3">
@@ -486,7 +692,7 @@ const handleFileChange = (index, event) => {
                         const selection = selectedOption ? selectedOption.label : "";
                         setValue("selectedVulnerability", null);
                         setValue("Description", "");
-                        setValue("device",null)
+                        // setValue("device",null)
                         setValue("Impact", "");
                         setValue("VulnerableParameter", "");
                         setValue("Referance", "");
@@ -496,6 +702,7 @@ const handleFileChange = (index, event) => {
                         field.onChange(selection);
                         setProjectType(selection);
                         setDisableDevices(selection);
+                        setSelectedProjectNameAdd(selectedOption?.label)
                         setValue("ProjectType",selectedOption.label)
                       }}
                     />
@@ -503,14 +710,14 @@ const handleFileChange = (index, event) => {
                 />
                 {errors.ProjectType && <p className="text-danger">{errors.ProjectType.message}</p>}
               </Form.Group>
-              {disableDevices === "Devices" && (
+              {disableDevices === "Network Devices" && (
                   <Form.Group>
                     <Form.Label className="fs-5 fw-bolder">Devices<span className="text-danger">*</span>
                     </Form.Label>
                     <Controller
                       name="device"
                       control={control}
-                      rules={{ required: disableDevices === "Devices" ? "Device is required" : false }}
+                      rules={{ required: disableDevices === "Network Devices" ? "Device is required" : false }}
                       render={({ field }) => (
                         <Select
                           {...field}
@@ -527,30 +734,81 @@ const handleFileChange = (index, event) => {
                       {errors.device && <p className="text-danger">{errors.device.message}</p>}
                   </Form.Group>
                 )}
-              <Form.Group className="mb-3">
-              <Form.Label className={`fs-5 fw-bolder ${disableDevices === "Devices" ? "pt-3" : ""}`}>Vulnerability Name/Type<span className="text-danger">*</span></Form.Label>
-                  <Controller
-                    name="selectedVulnerability"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        {...field}
-                        id="vulnerability"
-                        options={vulnerabilityOptions}
-                        value={selectedVulnerability}  
-                        onChange={handleVulnerabilityChange}  
-                        placeholder="Select a vulnerability"
-                        isSearchable={true}
-                        onInputChange={(newValue) => setSearchQuery(newValue)}
-                        isLoading={loading}
+                   {disableDevices === "Network Devices" && (
+                <Form.Group>
+                    <Form.Label className="fs-5 fw-bolder pt-3">IP Address<span className="text-danger">*</span>
+                    </Form.Label>
+                     <Controller
+                        name="ipAddress"
+                        control={control}
+                        render={({field})=>(
+                          <input {...field} className="form-control"  placeholder="Enter IPAddress"/>
+                        )}
                       />
-                    )}
-                  />
-                  {errors.selectedVulnerability && <p className="text-danger">{errors.selectedVulnerability.message}</p>} 
-                </Form.Group>
+                      {errors.ipAddress && <p className="text-danger">{errors.ipAddress.message}</p>}
+                  </Form.Group>
+                   )}
               </div>
             </div>
             <div className="row">
+              <div className="d-flex justify-content-between align-items-center my-4">
+                <Button variant="primary" onClick={handleShowModalVulList}>List Of Vulnerability</Button>
+
+                {!showModalVul && (
+                  <Button variant="primary" onClick={handleShowModal}>Add Vulnerability</Button>
+                )}
+              </div>
+            </div>
+            {showModalVul && (
+            <div className="row pt-5">
+              <div className='col-sm-6 col-md-6 col-lg-6'>
+                  <Form.Group className="mb-3">
+                  <div className='row'>
+                    <div className='col-sm-10 col-md-10 col-lg-10'>
+                  <Form.Label className={`fs-5 fw-bolder ${disableDevices === "Network Devices" ? "pt-3" : ""}`}>Vulnerability Name/Type<span className="text-danger">*</span></Form.Label>
+                      <Controller
+                        name="selectedVulnerability"
+                        control={control}
+                        render={({ field }) => (
+                          <Select
+                            {...field}
+                            id="vulnerability"
+                            options={vulnerabilityOptions}
+                            value={selectedVulnerability}  
+                            onChange={handleVulnerabilityChange}  
+                            placeholder="Select a vulnerability"
+                            isSearchable={true}
+                            onInputChange={(newValue) => setSearchQuery(newValue)}
+                            isLoading={loading}
+                          />
+                        )}
+                      />
+                      {errors.selectedVulnerability && <p className="text-danger">{errors.selectedVulnerability.message}</p>} 
+                      </div>
+                      <div className='col-sm-2 col-md-2 col-lg-2'>
+                          <Button variant="success" className="button-middle" onClick={handleShow}><IoMdAdd className="fs-3" /></Button>
+                      </div>
+                    </div>
+                  </Form.Group>
+              </div>
+              <div className='col-sm-6 col-md-6 col-lg-6'>
+                  <Form.Group className="mb-3">
+                  <Form.Label className="fs-5 fw-bolder">Severity<span className="text-danger">*</span></Form.Label>
+                  <Controller
+                  name="severity"
+                  control={control}
+                  render={({field})=>(
+                    <Form.Control  {...field}
+                      className='form-control'
+                      placeholder="Enter Description"
+                      readOnly
+                      disabled
+                  />
+                  )}
+                />
+                   {errors.severity && <p className="text-danger">{errors.severity.message}</p>}
+                </Form.Group>
+              </div>
               <Form.Group className="mb-3">
                 <Form.Label className="fs-5 fw-bolder">Description<span className="text-danger">*</span></Form.Label>
                 <Controller
@@ -566,7 +824,7 @@ const handleFileChange = (index, event) => {
                 {errors.Description && <p className="text-danger">{errors.Description.message}</p>}
               </Form.Group>
               <Form.Group className="mb-3">
-                <Form.Label className="fs-5 fw-bolder">Path<span className="text-danger">*</span></Form.Label>
+                <Form.Label className="fs-5 fw-bolder">Location<span className="text-danger">*</span></Form.Label>
                 <Controller
                   name="Path"
                   control={control}
@@ -683,6 +941,7 @@ const handleFileChange = (index, event) => {
                 {errors.Recomendation && <p className="text-danger">{errors.Recomendation.message}</p>}
               </Form.Group>
             </div>
+            )}
             <Button variant="primary" onClick={handleButtonClick} type="submit" disabled={loading}>
               {loading ? (
                 <Spinner animation="border" size="sm" />
