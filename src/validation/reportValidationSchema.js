@@ -10,12 +10,14 @@ export const reportValidationSchema = yup.object().shape({
   Description:yup.string().required("Enter Description"),
   selectedProjectName:yup.string().required("Select Project Name"),
   ProjectType:yup.string().required("Select Project Type"),
-  severity:yup.string(),
+  severity:yup.string().required('Select Sevirity Type'),
   device:yup.string().nullable().when("ProjectType",{
     is:"Devices",
     then: yup.string().required("Device is required"),
     otherwise:yup.string().nullable()
   }),
+  name:yup.string().required('Select Name'),
+  ipAddress:yup.string().required('Select Name'),
   proofOfConcept: yup.array().of(
     yup.object().shape({
       text: yup.string().when('index', {

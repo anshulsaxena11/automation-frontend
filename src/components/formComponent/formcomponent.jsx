@@ -2,7 +2,7 @@ import React from 'react';
 import { Form, Button } from 'react-bootstrap';
 import { IoMdListBox } from "react-icons/io";
 
-const FormComponent = ({ label, placeholder, value, onChange }) => {
+const FormComponent = ({ label, placeholder, value, onChange,disabled,readonly }) => {
   
   return (
     <Form>
@@ -12,15 +12,17 @@ const FormComponent = ({ label, placeholder, value, onChange }) => {
             <Form.Label>{label}</Form.Label>
           </div>
           <div className="col-sm-2 col-md-2 col-lg-2">
-            <Button className="btn btn-light" type="submit">
+            {/* <Button className="btn btn-light" type="submit">
               <IoMdListBox  className="text-success fs-3" />
-            </Button>
+            </Button> */}
           </div>
         </div>
         <Form.Control
           type="text"
           placeholder={placeholder}
-          value={value}  
+          value={value}
+          disabled={disabled} 
+          readonly={readonly} 
           onChange={onChange}  
         />
       </Form.Group>

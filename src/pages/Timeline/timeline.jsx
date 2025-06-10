@@ -8,14 +8,18 @@ import { Form, Button, Table } from "react-bootstrap";
 import { srpiEmpTypeListActive } from "../../api/syncEmp/syncEmp";
 import { IoIosArrowDropdownCircle, IoIosArrowDropupCircle } from "react-icons/io";
 import { ToastContainer, toast } from 'react-toastify';
+import { FaRegCheckCircle } from "react-icons/fa";
+import { Timeline, TimelineEvent } from '@mailtop/horizontal-timeline';
+import './timeline.css'
 
-const Timeline = () => {
+const Timelines = () => {
     const { register, setValue, reset } = useForm();
     const [loading, setLoading] = useState(false);
     const [ProjectName, setProjectName] = useState([]);
     const [SelectedProjectName, setselectedProjectName] = useState();
     const [showModal, setShowModal] = useState(false); 
     const [viewData, setViewData] = useState([]); 
+    const [projectCreatedAt, setProjectCreatedAt] = useState('');
     const [Phase, setPhase] = useState([ 
         { projectStartDate: "", testCompletedEndDate: "", reportSubmissionEndDate: "", comments: "" }
     ]);
@@ -46,18 +50,20 @@ const Timeline = () => {
                 const id = SelectedProjectName.value;
                 const response = await getProjectDetailsTimelineById(id);
                 const fetchedData = response?.data; 
+                console.log(fetchedData)
                 const fetchPhase = fetchedData?.projectPhase; 
 
                 if (fetchedData) {
                     const formattedStartDate = fetchedData.startDate?.split("T")[0] || "";
                     const formattedEndDate = fetchedData.endDate?.split("T")[0] || "";
+                    const formatedcreatedAt = fetchedData.createdAt?.split("T")[0] || "";
 
                     reset({
                         ...fetchedData,
                         startDate: formattedStartDate,
                         endDate: formattedEndDate,
                     });
-
+                    setProjectCreatedAt(formatedcreatedAt);
                     setResourceMapping(fetchedData.resourseMapping || []);
                     if (!fetchPhase ||!Array.isArray(fetchPhase.phase)||fetchPhase.phase.length === 0 ){
                         setPhase([]);
@@ -219,6 +225,15 @@ const Timeline = () => {
                 // !phase.comments
         );
     };
+    const timelineEvents = [
+        { label: 'Work Order Recived', date: projectCreatedAt || '',subTitle:projectCreatedAt },
+        ...Phase.flatMap((phase, index) => [
+            { label: `Phase ${index + 1} Start`, date: phase.projectStartDate || '' },
+            { label: `Phase ${index + 1} Test Completed`, date: phase.testCompletedEndDate || '' },
+            { label: `Phase ${index + 1} Report Submitted`, date: phase.reportSubmissionEndDate || '' }
+        ])
+        ].filter(event => event.date);
+        console.log(timelineEvents)
 
     return (
         <div>
@@ -294,7 +309,57 @@ const Timeline = () => {
                                 </Form.Group>
                             </div>
                         </div>
+                        <div className='row pt-3'>
+                            <div className="col-md-3">
+                                <Form.Group>
+                                    <Form.Label>Project Value</Form.Label>
+                                    <Form.Control type="text" readOnly {...register("projectValue")} />
+                                </Form.Group>
+                            </div>
+                            
+                        </div>
+                        <div className='row pt-3'>
+                            <div className="col-md-3">
+                                <Form.Group>
+                                    <Form.Label>Amount Build</Form.Label>
+                                    <Form.Control type="text"  {...register("amountBuild")} />
+                                </Form.Group>
+                            </div>
+                            <div className="col-md-3">
+                                <Form.Group>
+                                    <Form.Label>Amount Recived</Form.Label>
+                                    <Form.Control type="text"  {...register("amountRecived")} />
+                                </Form.Group>
+                            </div>
+                            <div className="col-md-3">
+                                <Form.Group>
+                                    <Form.Label>Status</Form.Label>
+                                    <Form.Control type="text"  {...register("Status")} />
+                                </Form.Group>
+                            </div>
+                        </div>
 
+                        {/* <div className="mt-5">
+                            <h4>Timeline Overview</h4>
+                            {timelineEvents.length > 0 ? (
+                                <Timeline>
+                                {timelineEvents.map((event, idx) => (
+                                    <TimelineEvent 
+                                        key={idx} 
+                                        title={event.label} 
+                                        color='#87a2c7'
+                                        icon={FaRegCheckCircle}
+                                        subtitle={event.subTitle}
+                                        createdAt={event.date}
+                                        >
+                                    </TimelineEvent>
+                                    
+                                ))}
+                                </Timeline>
+                            ) : (
+                                <p>No timeline events to display.</p>
+                            )}
+                            </div> */}
                         <div className="my-4">
                             <Button variant="primary" onClick={handleShowModal}>Resource Allotment</Button>
                         </div>
@@ -410,4 +475,4 @@ const Timeline = () => {
     );
 };
 
-export default Timeline;
+export default Timelines;

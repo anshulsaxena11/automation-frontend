@@ -561,11 +561,11 @@ const HomePage = () => {
                 </Form.Group>
                 )}
                 <Form.Group className="mb-3" controlId="ProjectValue">
-                  <Form.Label className="fs-5 fw-bolder">Project value in Numeric<span className="text-danger">*</span></Form.Label>
+                  <Form.Label className="fs-5 fw-bolder">Project value (GST)<span className="text-danger">*</span></Form.Label>
                   <Controller
                     name="ProjectValue"
                     control={control}
-                    render={({ field }) => <input {...field} className="form-control" placeholder="Enter Project Value in Number"/>}
+                    render={({ field }) => <input {...field} className="form-control" placeholder="Project Value in &#8377;"/>}
                   />
                   {errors.ProjectValue && <p className="text-danger">{errors.ProjectValue.message}</p>}
                 </Form.Group>
@@ -574,7 +574,7 @@ const HomePage = () => {
                   <Controller
                     name="ServiceLoction"
                     control={control}
-                    render={({ field }) => <input {...field} className="form-control" placeholder="Enter Service Location"/>}
+                    render={({ field }) => <input {...field} className="form-control" placeholder="Location from where Project will be Executed"/>}
                   />
                   {errors.ServiceLoction && <p className="text-danger">{errors.ServiceLoction.message}</p>}
                 </Form.Group>
