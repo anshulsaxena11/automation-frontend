@@ -2876,15 +2876,20 @@ const watermarkHeader = (watermarkData && logoData)
                   
 
         const rows = [
+  ["Project Name", safeText(item.projectName)],
+  ["Project Type", safeText(item.projectType)],
+  item.projectType === 'Network Devices' && ["Device Type", safeText(item.projectType)],
+  item.projectType === 'Network Devices' && ["Device Name/IP", safeText(item.projectType)],
   ["Vulnerability Name/Type", safeText(item.vulnerabilityName)],
   ["Severity", safeText(item.sevirty)],
   ["Description", safeText(item.description)],
-  ["IMPACT", safeText(item.impact)],
-  ["Path", safeText(item.path)],
+  ["Location", safeText(item.path)],
+  ["IP Adress", safeText('127.0.0.1')],
+  ["IMPACT", safeText(item.impact)],  
   ["Vulnerable Parameter", safeText(item.vulnerableParameter)],
   ["References", safeText(item.references)],
   ["Recomendation", safeText(item.recomendation)],
-].map(([title, value]) =>
+].filter(Boolean).map(([title, value]) =>
   new TableRow({
     children: [
       new TableCell({

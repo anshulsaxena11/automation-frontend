@@ -385,6 +385,24 @@ const ReportPdfGenerator = () => {
                             </tr>
                           </thead>
                           <tbody>
+                             <tr>
+                              <td style={{ backgroundColor:"#b6dde8" }}>Project Type</td>
+                              <td>{item.projectType}</td>
+                            </tr>
+                            
+                            {item.projectType === 'Network Devices' && (
+                              <>
+                              <tr>
+                                <td style={{ backgroundColor: "#b6dde8" }}>Device Type</td>
+                                <td>{item.projectType}</td>
+                              </tr>
+                              <tr>
+                                <td style={{ backgroundColor: "#b6dde8" }}>Device Name/IP</td>
+                                <td>{item.projectType}</td>
+                              </tr>\
+                              </>
+                            )}
+
                             <tr>
                               <td style={{ backgroundColor:"#b6dde8" }}>Vulnerability Name/Type</td>
                               <td>{item.vulnerabilityName}</td>
@@ -400,8 +418,16 @@ const ReportPdfGenerator = () => {
                               <td>{item.description}</td>
                             </tr>
                             <tr>
-                              <td style={{ backgroundColor:"#b6dde8" }}>Path</td>
+                              <td style={{ backgroundColor:"#b6dde8" }}>Location</td>
                               <td>{item.path}</td>
+                            </tr>
+                            <tr>
+                              <td style={{ backgroundColor:"#b6dde8" }}>Impact</td>
+                              <td>{item.path}</td>
+                            </tr>
+                             <tr>
+                              <td style={{ backgroundColor:"#b6dde8" }}>IP Adress</td>
+                              <td>127.0.0.1</td>
                             </tr>
                             <tr>
                               <td style={{ backgroundColor:"#b6dde8" }}>Vulnerable Parameter</td>
