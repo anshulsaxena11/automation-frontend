@@ -1,0 +1,114 @@
+// pages/ProjectListPage.js
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getTenderDetailsList } from '../../api/TenderTrackingAPI/tenderTrackingApi';
+import ListView from '../../components/listView/listView';
+
+const TenderDetailsList = () => {
+  const [data, setData] = useState([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  // Define columns as array
+  const columns = [
+    { key: 'tenderName', label: 'Tender Name' },
+    { key: 'organizationName', label: 'Organization' },
+    { key: 'state', label: 'State' },
+    { key: 'taskForce', label: 'Task Force' },
+    { key: 'valueINR', label: 'Value (INR)' },
+    { key: 'status', label: 'Status' },
+    { key: 'lastDate', label: 'Last Date' },
+  ];
+
+  // Convert array to key-label map
+  const columnNames = columns.reduce((acc, col) => {
+    acc[col.key] = col.label;
+    return acc;
+  }, {});
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const response = await getTenderDetailsList({
+        page,
+        search: searchQuery.trim(),
+        limit: 10,
+      });
+
+      const transformedData = (response?.data || []).map(item => ({
+        _id: item?._id || '',
+        tenderName: item?.tenderName || 'N/A',
+        organizationName: item?.organizationName || 'N/A',
+        state: item?.state || 'N/A',
+        taskForce: item?.taskForce || 'N/A',
+        valueINR: item?.valueINR?.toLocaleString('en-IN') || '0',
+        status: item?.status || 'N/A',
+        lastDate: item?.lastDate?.split('T')[0] || 'N/A',
+      }));
+
+      setData(transformedData);
+      setTotalCount(response?.total || 0);
+      setTotalPages(response?.totalPages || 1);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [page, searchQuery]);
+
+  const handlePageChange = (newPage) => {
+    if (newPage > 0 && newPage <= totalPages) {
+      setPage(newPage);
+    }
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setPage(1);
+  };
+
+  const handleAddNewClick = () => {
+    navigate('/projectDetails');
+  };
+
+  const handleViewClick = (data) => {
+    navigate(`/projectDetails/${data._id}`);
+  };
+
+  const handleEditClick = (data) => {
+    navigate(`/projectDetailsEdit/${data._id}`);
+  };
+
+  return (
+    <div>
+      <ListView
+        title="Project Detail"
+        buttonName="Add New"
+        buttonClass="btn btn-primary"
+        onAddNewClick={handleAddNewClick}
+        columns={columns.map(c => c.key)} // pass just keys to render table
+        columnNames={columnNames}        // pass key-label map
+        data={data}
+        page={page}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        searchQuery={searchQuery}
+        onSearchChange={handleSearchChange}
+        loading={loading}
+        onViewClick={handleViewClick}
+        onEditClick={handleEditClick}
+        showEditView={true}
+      />
+    </div>
+  );
+};
+
+export default TenderDetailsList;

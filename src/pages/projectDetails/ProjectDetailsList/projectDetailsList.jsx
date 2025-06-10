@@ -84,7 +84,7 @@ const ProjectDetailsList = () => {
   return (
     <div>
       <ListView
-        title="Project Details"
+        title="Project Detail"
         buttonName="Add New"
         onAddNewClick={handleAddNewClick}
         columns={columns}

@@ -38,6 +38,8 @@ const Sidebar = ({ onToggle }) => {
       navigate("/Tools-Hardware-list")
     }else if(page === "Timeline"){
       navigate("/Timeline")
+    }else if(page === "/tender-tracking"){
+      navigate("/TenderTracking")
     }
   };
 
@@ -82,6 +84,10 @@ const Sidebar = ({ onToggle }) => {
         <li className="menu-item" onClick={() => handlePageSelect("Timeline")}>
           <FaTimeline    className="icon" />
           {isExpanded && <span className="label">Project Management</span>}
+        </li>
+        <li className="menu-item" onClick={() => handlePageSelect("TenderTracking")}>
+          <FaTimeline    className="icon" />
+          {isExpanded && <span className="label">Tender Tracking</span>}
         </li>
       </ul>
     </div>

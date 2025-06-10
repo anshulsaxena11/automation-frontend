@@ -23,6 +23,9 @@ import ToolsAndHardwareEdit from '../../pages/toolsandHardware/ToolsAndHardwareE
 import ToolsAndHardwareView from '../../pages/toolsandHardware/toolsAndHardwareView/TollAndHardwareView.jsx'
 import TimelineEvent from '../../pages/Timeline/timeline.jsx'
 import PieChart from "../../pages/charts/piechartscomponent.jsx"
+import Dashboard from "../../pages/dashboard/dashboard.jsx"
+import TenderTracking from "../../pages/tender/tendertracking.jsx"
+import TenderList from "../../pages/tender/tenderlist.jsx"
 import './contentBody.css'
 
 const ContentBody = ({ isSidebarExpanded }) => {
@@ -47,7 +50,9 @@ const ContentBody = ({ isSidebarExpanded }) => {
 
       {/* Page Content Remains in Place */}
       <div className={`page-content ${loading ? "loading" : ""}`}>
-        <Routes>
+        <Routes>          
+          <Route path="/" element={<Dashboard/>}/>
+          <Route path="/Dashboard" element={<Dashboard/>}/>
           <Route path="/home" element={<ProjectDetailsList />} />
           <Route path="/ProjectDetails" element={<Home />} />
           <Route path="/projectDetails/:id" element={<ProjectDetailsView />} />
@@ -70,6 +75,9 @@ const ContentBody = ({ isSidebarExpanded }) => {
           <Route path="/Tools-Hardware-Master-View/:id" element={<ToolsAndHardwareMappingView/>}/>
           <Route path='/Tools-Hardware-View/:id' element={<ToolsAndHardwareView/>}/>
           <Route path="/Timeline" element={<TimelineEvent/>}/>
+          <Route path="/Tender-Tracking" element={<TenderTracking/>}/>
+          <Route path="/tender-list" element={<TenderList/>}/>
+          
         </Routes>
       </div>
     </div>
