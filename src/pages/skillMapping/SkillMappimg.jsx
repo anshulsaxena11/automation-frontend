@@ -135,6 +135,7 @@ const SkillMapping = () => {
         const fetchProjectTypeList = async () => {
             try {
                 const response = await getProjectTypeList();
+                console.log(response.data)
                 setProjectTypes(response.data);
             } catch (error) {
                 console.error("Error fetching project types:");

@@ -13,19 +13,31 @@ import { Timeline, TimelineEvent } from '@mailtop/horizontal-timeline';
 import './timeline.css'
 
 const Timelines = () => {
-    const { register, setValue, reset } = useForm();
+    const { register, setValue, reset, getValues  } = useForm();
     const [loading, setLoading] = useState(false);
     const [ProjectName, setProjectName] = useState([]);
     const [SelectedProjectName, setselectedProjectName] = useState();
     const [showModal, setShowModal] = useState(false); 
     const [viewData, setViewData] = useState([]); 
     const [projectCreatedAt, setProjectCreatedAt] = useState('');
+    const [oneStaus,setOneStatus] = useState(false)
     const [Phase, setPhase] = useState([ 
         { projectStartDate: "", testCompletedEndDate: "", reportSubmissionEndDate: "", comments: "" }
     ]);
     const [resourceMapping, setResourceMapping] = useState([]); 
 
     const [expandedPhases, setExpandedPhases] = useState({});
+    const statusOptions = [
+        {value:'Work Order Recived',label:'Work Order Recived'},
+        {value:'Ongoing',label:'Ongoing'},
+        {value:'On Hold',label:'On Hold'},
+        {value:'Complete',label:'Complete'},
+        {value:'Closed',label:'Closed'},
+    ]
+
+    const [selectStatus,setSelectStatus]= useState([]);
+    const [valueStatus,setValueStaus] = useState()
+    const formValues = getValues();
 
     useEffect(() => {
         const fetchEmpList = async () => {
@@ -47,6 +59,7 @@ const Timelines = () => {
     useEffect(() => {
         const fetchProjectDetails = async () => {
             try {
+                if(!oneStaus){
                 const id = SelectedProjectName.value;
                 const response = await getProjectDetailsTimelineById(id);
                 const fetchedData = response?.data; 
@@ -57,12 +70,23 @@ const Timelines = () => {
                     const formattedStartDate = fetchedData.startDate?.split("T")[0] || "";
                     const formattedEndDate = fetchedData.endDate?.split("T")[0] || "";
                     const formatedcreatedAt = fetchedData.createdAt?.split("T")[0] || "";
+                    const amountBill = fetchPhase.amountBuild
+                    const amountRecived=fetchPhase.amountRecived
 
                     reset({
                         ...fetchedData,
                         startDate: formattedStartDate,
                         endDate: formattedEndDate,
+                        amountBuild:amountBill,
+                        amountRecived:amountRecived,
                     });
+
+                if (fetchPhase?.amountStatus && statusOptions.length > 0) {
+                    const matchedStatus = statusOptions.find(
+                        (item) => item.value === fetchPhase.amountStatus
+                    );
+                    setSelectStatus(matchedStatus || null);
+                }
                     setProjectCreatedAt(formatedcreatedAt);
                     setResourceMapping(fetchedData.resourseMapping || []);
                     if (!fetchPhase ||!Array.isArray(fetchPhase.phase)||fetchPhase.phase.length === 0 ){
@@ -83,6 +107,8 @@ const Timelines = () => {
                         });
                         setExpandedPhases(expandedInit);
                     }
+                    setOneStatus(true)
+                }
                 } else {
                     console.log("No data received for the project.");
                 }
@@ -95,7 +121,7 @@ const Timelines = () => {
         if (SelectedProjectName?.value) {
             fetchProjectDetails();
         }
-    }, [SelectedProjectName, reset]);
+    }, [SelectedProjectName, reset, statusOptions,oneStaus]);
 
     useEffect(() => {
         const fetchProjectNameList = async () => {
@@ -124,6 +150,7 @@ const Timelines = () => {
     const handleProjectName = (e) => {
         setselectedProjectName(e);
         setExpandedPhases({}); 
+        setOneStatus(false)
     };
 
     const handleShowModal = () => setShowModal(true);
@@ -183,10 +210,13 @@ const Timelines = () => {
         }
 
         const payload = {
+            amountBuild:formValues.amountBuild,
+            amountRecived:formValues.amountRecived,
+            amountStatus:valueStatus,
             phase: Phase.map((item, index) => ({
                 ...item,
                 noOfPhases: `Phase ${index + 1}`,
-            })),
+            })), 
         };
 
         try {
@@ -207,6 +237,7 @@ const Timelines = () => {
                     expandedInit[idx] = true;
                 });
                 setExpandedPhases(expandedInit);
+                setOneStatus(false)
             } else {
                 toast.error("Failed to submit phases.");
             }
@@ -234,6 +265,12 @@ const Timelines = () => {
         ])
         ].filter(event => event.date);
         console.log(timelineEvents)
+
+        const handleStatusChange = (e) =>{
+            const selected= e?.label
+            setSelectStatus(e)
+            setValueStaus(selected)
+        }
 
     return (
         <div>
@@ -287,25 +324,25 @@ const Timelines = () => {
                             <div className="col-md-3">
                                 <Form.Group>
                                     <Form.Label>Project Name</Form.Label>
-                                    <Form.Control type="text" readOnly {...register("projectName")} />
+                                    <Form.Control type="text" readOnly disabled {...register("projectName")} />
                                 </Form.Group>
                             </div>
                             <div className="col-md-3">
                                 <Form.Group>
                                     <Form.Label>Organisation Name</Form.Label>
-                                    <Form.Control type="text" readOnly {...register("orginisationName")} />
+                                    <Form.Control type="text" readOnly disabled {...register("orginisationName")} />
                                 </Form.Group>
                             </div>
                             <div className="col-md-3">
                                 <Form.Group>
                                     <Form.Label>Project Start Date</Form.Label>
-                                    <Form.Control type="date" readOnly {...register("startDate")} />
+                                    <Form.Control type="date" readOnly  disabled {...register("startDate")} />
                                 </Form.Group>
                             </div>
                             <div className="col-md-3">
                                 <Form.Group>
                                     <Form.Label>Project End Date</Form.Label>
-                                    <Form.Control type="date" readOnly {...register("endDate")} />
+                                    <Form.Control type="date" readOnly disabled {...register("endDate")} />
                                 </Form.Group>
                             </div>
                         </div>
@@ -313,7 +350,7 @@ const Timelines = () => {
                             <div className="col-md-3">
                                 <Form.Group>
                                     <Form.Label>Project Value</Form.Label>
-                                    <Form.Control type="text" readOnly {...register("projectValue")} />
+                                    <Form.Control type="text" disabled readOnly {...register("projectValue")} />
                                 </Form.Group>
                             </div>
                             
@@ -334,7 +371,13 @@ const Timelines = () => {
                             <div className="col-md-3">
                                 <Form.Group>
                                     <Form.Label>Status</Form.Label>
-                                    <Form.Control type="text"  {...register("Status")} />
+                                    <Select
+                                        options={statusOptions}
+                                        value={selectStatus}
+                                        onChange={handleStatusChange}
+                                        placeholder="Select Status"
+                                        isClearable
+                                    />
                                 </Form.Group>
                             </div>
                         </div>
@@ -366,7 +409,7 @@ const Timelines = () => {
                         <h4>Project Phases</h4>
                         {Phase.length === 0 && <p>No phases found.</p>}
                         {Phase.map((phase, index) => (
-                            <div key={index} className="mb-3 border p-3 rounded">
+                            <div key={index} className="mb-3 bg-info bg-opacity-10 border border-info border-start-0 rounded-end p-3 rounded">
                                 <div 
                                   style={{ cursor: "pointer", userSelect: "none", display: "flex", alignItems: "center", justifyContent: "space-between" }}
                                   onClick={() => toggleExpandPhase(index)}>
@@ -413,7 +456,7 @@ const Timelines = () => {
                                                     <Form.Label>Report Submitted Date</Form.Label>
                                                     <Form.Control
                                                         type="date"
-                                                          disabled={!phase.testCompletedEndDate}
+                                                        disabled={!phase.testCompletedEndDate}
                                                         min={phase.testCompletedEndDate || ''}
                                                         value={phase.reportSubmissionEndDate}
                                                         onChange={(e) =>
