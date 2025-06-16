@@ -47,7 +47,8 @@ const ReportPage = () => {
   const severityOptions = [
     { value: "High", label: "High" },
     { value: "Medium", label: "Medium" },
-    { value: "Low", label: "Low" },
+    { value: "LOW", label: "LOW" },
+    { value: "INFO", label: "INFO" },
   ];
   const [proofOfConcepts, setProofOfConcepts] = useState([
     { text: "", file: null, preview: null },
@@ -72,12 +73,28 @@ const ReportPage = () => {
   const name = watch("name");
   const deviceValue = watch("device");
   const ipAddress = watch('ipAddress')
-  
-  useEffect(() => {
+ 
+ useEffect(() => {
+  setValue("Path", ipAddress); // ← This would cause what you're describing
+}, [ipAddress]); 
+
+  const savedSelectedProjectName = localStorage.getItem("selectedProjectName");
+  const savedRoundValue = localStorage.getItem("roundValue");
+  const savedName = localStorage.getItem("name");
+  const savedSelectedProjectNameAdd = localStorage.getItem("selectedProjectNameAdd");
+  const savedDeviceValue = localStorage.getItem("deviceValue");
+  const savedIpAddress = localStorage.getItem("ipAddress");
   const fetchVulList = async () => {
     setLoading(true);
     try {
-      if (selectedProjectName || roundValue || name || selectedProjectNameAdd || ipAddress || deviceValue) {
+      const projectName = selectedProjectName || savedSelectedProjectName;
+      const round = roundValue || savedRoundValue;
+      const Name = name || savedName;
+      const projectType = selectedProjectNameAdd || savedSelectedProjectNameAdd;
+      const devices = deviceValue || savedDeviceValue;
+      const ip = ipAddress || savedIpAddress;
+
+       if (projectName || round || Name || projectType || devices || ip) {
         const response = await getVulListSpecific({
           projectName: selectedProjectName,
           projectType: selectedProjectNameAdd,
@@ -95,9 +112,6 @@ const ReportPage = () => {
       setLoading(false);
     }
   };
-
-  fetchVulList();
-}, [selectedProjectName, roundValue, name, selectedProjectNameAdd, deviceValue, ipAddress])
 
   useEffect(() => {
     loadRounds();
@@ -366,6 +380,7 @@ const handleFileChange = (index, event) => {
       toast.success('Form submitted successfully!', {
         className: 'custom-toast custom-toast-success',
       });
+      fetchVulList()
     } catch(error){
       const message = error?.response?.data?.message || "Something went wrong";
       toast.error(message, {
@@ -482,6 +497,7 @@ const handleFileChange = (index, event) => {
     const enteredName = getValues("name");
     const ipAddress = getValues('ipAddress')
     if (selectedProject && selectedRound && selectedDevice && selectedProjectType && enteredName && ipAddress) {
+      fetchVulList()
       setShowModalVulList(true)
     }
     else{
@@ -689,7 +705,7 @@ const handleFileChange = (index, event) => {
                 </Form.Group>
                 {disableDevices === "Network Devices" && (
                 <Form.Group>
-                    <Form.Label className="fs-5 fw-bolder">Name<span className="text-danger">*</span>
+                    <Form.Label className="fs-5 fw-bolder">Devices Name<span className="text-danger">*</span>
                     </Form.Label>
                      <Controller
                         name="name"
@@ -833,7 +849,7 @@ const handleFileChange = (index, event) => {
                   render={({field})=>(
                     <Form.Control  {...field}
                       className='form-control'
-                      placeholder="Enter Description"
+                      placeholder="Enter Severity"
                       readOnly
                       disabled
                   />
