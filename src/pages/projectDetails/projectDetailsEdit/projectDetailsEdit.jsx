@@ -28,7 +28,7 @@ const ProjectDetailsEdit = ({ ID, onClose }) => {
     const [directrateList, setDirectrateList] = useState([]);
     const [previewFileType, setPreviewFileType] = useState('');
     const [selectedDirectorate, setSelectedDirectorate] = useState(null);
-     const [typeOfWorkOption,setTypeOfWorkOption] = useState([]);
+    const [typeOfWorkOption,setTypeOfWorkOption] = useState([]);
 
     const { id } = useParams();
     const projectId = ID || id;

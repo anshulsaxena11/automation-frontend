@@ -11,14 +11,13 @@ import ToolsAndHardwareMappingList from "../pages/ToolsandHardwareMaster/toolsAn
 import TimelineEvent from "../pages/Timeline/timeline"
 import PieChart from "../pages/charts/piechartscomponent"
 import Dashboard from "../pages/dashboard/dashboard"
-import TenderTracking from "../pages/tender/tendertracking"
-import TenderList from "../pages/tender/tenderlist";
+import TenderTracking from "../pages/tender/TenderForm/tendertracking"
+import TenderList from "../pages/tender/TenderList/tenderlist";
 
 const AppRoutes = () => {
   return (
     <Routes>
-       <Route path="/" element={<Dashboard/>}/>
-      <Route path="/Dashboard" element={<Dashboard/>}/>     
+      <Route path="/" element={<Dashboard/>}/>
       <Route path="/ProjectDetailsList" element={<ProjectDetailsList />} />
       <Route path="/reportList" element={<ReportList />} />
       <Route Path="/ReportPdfGenerator" element={<ReportPdfGenerator/>}/>

@@ -4,6 +4,7 @@ import { FaPlus, FaCheck, FaEye } from "react-icons/fa";
 import { IoEyeSharp, IoClose } from "react-icons/io5";
 import { CiEdit,CiViewList } from "react-icons/ci";
 import { RiMindMap } from "react-icons/ri";
+import { GiPowerButton } from "react-icons/gi";
 import Select from 'react-select';
 
 const ListView = ({ 
@@ -65,7 +66,9 @@ const ListView = ({
   showbuttonSubmit=false,
   buttonClassthree,
   onButtonThree,
-  showFiltersTwo=false
+  showFiltersTwo=false,
+  onCheckClickSecond,
+  statusMember=false
 }) => {
   return (
     <div>
@@ -204,6 +207,9 @@ const ListView = ({
               <th key={index}>{columnNames[col]}</th>
             ))}
             <th>Action</th>
+             {statusMember && (
+              <th>Member Status</th>
+             )}
           </tr>
         </thead>
             )}
@@ -290,6 +296,13 @@ const ListView = ({
                     </>
                   )}
                 </td>
+                  {statusMember && (
+                    <td className="text-center align-middle">
+                      <span className='fs-4' style={{ color: 'green', fontWeight: 'bold' }}>
+                        <GiPowerButton  style={{ cursor: 'pointer' }} onClick={() => onCheckClickSecond(item)} />
+                      </span>{' '}
+                    </td>
+                  )}
               </tr>
             ))
           )}

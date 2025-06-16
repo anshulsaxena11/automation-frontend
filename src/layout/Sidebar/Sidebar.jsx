@@ -6,7 +6,10 @@ import { RiAdminFill } from "react-icons/ri";
 import { BiSolidReport } from "react-icons/bi";
 import { useNavigate } from "react-router-dom"; 
 import { GiSkills } from "react-icons/gi";
+import { RiDashboard3Fill } from "react-icons/ri";
 import { IoHardwareChipOutline } from "react-icons/io5";
+import { MdSpatialTracking } from "react-icons/md";
+import { CgListTree } from "react-icons/cg";
 import "./Sidebar.css";
 
 const Sidebar = ({ onToggle }) => {
@@ -38,8 +41,10 @@ const Sidebar = ({ onToggle }) => {
       navigate("/Tools-Hardware-list")
     }else if(page === "Timeline"){
       navigate("/Timeline")
-    }else if(page === "/tender-tracking"){
-      navigate("/TenderTracking")
+    }else if(page === "TenderList"){
+      navigate("/tender-list")
+    }else if(page === '/'){
+      navigate('/')
     }
   };
 
@@ -49,6 +54,10 @@ const Sidebar = ({ onToggle }) => {
         <FaBars />
       </button>
       <ul className="menu">
+        <li className="menu-item" onClick={() => handlePageSelect("/")}>
+          <RiDashboard3Fill  className="icon" />
+          {isExpanded && <span className="label">Dashboard</span>}
+        </li>
         <li className="menu-item" onClick={() => handlePageSelect("ProjectDetailsList")}>
           <FaHome className="icon" />
           {isExpanded && <span className="label">Home</span>}
@@ -85,8 +94,8 @@ const Sidebar = ({ onToggle }) => {
           <FaTimeline    className="icon" />
           {isExpanded && <span className="label">Project Management</span>}
         </li>
-        <li className="menu-item" onClick={() => handlePageSelect("TenderTracking")}>
-          <FaTimeline    className="icon" />
+        <li className="menu-item" onClick={() => handlePageSelect("TenderList")}>
+          <CgListTree     className="icon" />
           {isExpanded && <span className="label">Tender Tracking</span>}
         </li>
       </ul>

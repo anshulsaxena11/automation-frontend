@@ -67,6 +67,7 @@ const ReportPage = () => {
   const [showModal, setShowModal] = useState(false); 
   const [showModalVulList, setShowModalVulList] = useState(false); 
   const [showVulLisst,setShowVulList] = useState([])
+  const [imageSrc, setImageSrc] = useState(null);
   const roundValue = watch("round");
   const name = watch("name");
   const deviceValue = watch("device");
@@ -108,7 +109,8 @@ const ReportPage = () => {
       try {
         if (ProjectType && (ProjectType !== "Network Devices" || selectDevice)){
           const projectType = ProjectType === 'Network Devices' && selectDevice ? selectDevice.label : ProjectType;
-          const response = await getVulnerabilityList({ProjectType:projectType}); 
+          const response = await getVulnerabilityList({ProjectType:projectType});
+          console.log(response) 
           const vulnerabilities = response.data;
           setVulnerabilityData(vulnerabilities)
   
@@ -459,9 +461,13 @@ const handleFileChange = (index, event) => {
   const selectedProjectType = getValues("ProjectType");
   const enteredName = getValues("name");
   const ipAddress = getValues('ipAddress')
-    if (selectedProject && selectedRound && selectedDevice && selectedProjectType && enteredName && ipAddress) {
+    if (selectedProject && selectedRound && selectedDevice && selectedProjectType === 'Network Devices' && enteredName && ipAddress) {
       setShowModalVul(true);
-    } else {
+    } 
+    else if(selectedProject && selectedRound && selectedProjectType !== 'Network Devices'){
+      setShowModalVul(true);
+    }
+    else {
       toast.error('All field must be filed', {
         className: 'custom-toast custom-toast-error',
       });
@@ -484,6 +490,33 @@ const handleFileChange = (index, event) => {
       });
     }
   }
+  useEffect(() => {
+  const handlePaste = (e) => {
+    const clipboardItems = e.clipboardData.items;
+    for (const item of clipboardItems) {
+      if (item.type.indexOf("image") !== -1) {
+        const blob = item.getAsFile();
+        const url = URL.createObjectURL(blob);
+
+        // Add pasted image to the last step (or first empty)
+        setProofOfConcepts((prev) => {
+          const updated = [...prev];
+          const targetIndex = updated.findIndex((p) => !p.preview);
+          if (targetIndex !== -1) {
+            updated[targetIndex] = { ...updated[targetIndex], file: blob, preview: url };
+          } else {
+            updated.push({ text: "", file: blob, preview: url });
+          }
+          return updated;
+        });
+        break;
+      }
+    }
+  };
+
+  document.addEventListener("paste", handlePaste);
+  return () => document.removeEventListener("paste", handlePaste);
+}, []);
 
   const handleCloseModal = () => setShowModalVulList(false);
   return (
@@ -763,8 +796,8 @@ const handleFileChange = (index, event) => {
             <div className="row pt-5">
               <div className='col-sm-6 col-md-6 col-lg-6'>
                   <Form.Group className="mb-3">
-                  <div className='row'>
-                    <div className='col-sm-10 col-md-10 col-lg-10'>
+                  {/* <div className='row'>
+                    <div className='col-sm-10 col-md-10 col-lg-10'> */}
                   <Form.Label className={`fs-5 fw-bolder ${disableDevices === "Network Devices" ? "pt-3" : ""}`}>Vulnerability Name/Type<span className="text-danger">*</span></Form.Label>
                       <Controller
                         name="selectedVulnerability"
@@ -784,15 +817,15 @@ const handleFileChange = (index, event) => {
                         )}
                       />
                       {errors.selectedVulnerability && <p className="text-danger">{errors.selectedVulnerability.message}</p>} 
-                      </div>
+                      {/* </div>
                       <div className='col-sm-2 col-md-2 col-lg-2'>
                           <Button variant="success" className="button-middle" onClick={handleShow}><IoMdAdd className="fs-3" /></Button>
                       </div>
-                    </div>
+                    </div> */}
                   </Form.Group>
               </div>
               <div className='col-sm-6 col-md-6 col-lg-6'>
-                  <Form.Group className="mb-3">
+                  <Form.Group className="mb-3 ">
                   <Form.Label className="fs-5 fw-bolder">Severity<span className="text-danger">*</span></Form.Label>
                   <Controller
                   name="severity"
@@ -901,7 +934,12 @@ const handleFileChange = (index, event) => {
                       />
                     </div>
                     <div className="col-md-6 mt-3">
-                    <Form.Control type="file"  accept=".jpeg,.jpg" onChange={(e) => handleFileChange(index, e)}   ref={(el) => (fileInputRefs.current[index] = el)} />
+                     {proof.preview ? (
+                        <img src={proof.preview} alt={`Pasted ${index}`} style={{ maxWidth: '100%', maxHeight: '400px' }} />
+                      ) : (
+                        <p>No image pasted yet</p>
+                      )}
+                    {/* <Form.Control type="file"  accept=".jpeg,.jpg" onChange={(e) => handleFileChange(index, e)}   ref={(el) => (fileInputRefs.current[index] = el)} />
                     {proof.preview && (
                       <div className="mt-2" style={{ cursor: 'pointer', marginTop: '10px' }}>
                         <h6 variant="primary" onClick={() => setShowPreview(true)}>
@@ -915,7 +953,7 @@ const handleFileChange = (index, event) => {
                           fileType={proof.fileType} 
                         />
                       </div>
-                    )}
+                    )} */}
                     </div>
                   </div>
                 ))}

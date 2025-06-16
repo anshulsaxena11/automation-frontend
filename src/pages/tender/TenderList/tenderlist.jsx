@@ -1,8 +1,8 @@
 // pages/ProjectListPage.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getTenderDetailsList } from '../../api/TenderTrackingAPI/tenderTrackingApi';
-import ListView from '../../components/listView/listView';
+import { getTenderDetailsList } from '../../../api/TenderTrackingAPI/tenderTrackingApi';
+import ListView from '../../../components/listView/listView';
 
 const TenderDetailsList = () => {
   const [data, setData] = useState([]);
@@ -49,7 +49,7 @@ const TenderDetailsList = () => {
         status: item?.status || 'N/A',
         lastDate: item?.lastDate?.split('T')[0] || 'N/A',
       }));
-
+      console.log(transformedData, "transform")
       setData(transformedData);
       setTotalCount(response?.total || 0);
       setTotalPages(response?.totalPages || 1);
@@ -76,23 +76,22 @@ const TenderDetailsList = () => {
   };
 
   const handleAddNewClick = () => {
-    navigate('/projectDetails');
+    navigate('/Tender-Tracking');
   };
 
   const handleViewClick = (data) => {
-    navigate(`/projectDetails/${data._id}`);
+    navigate(`/tender-View/${data._id}`);
   };
 
   const handleEditClick = (data) => {
-    navigate(`/projectDetailsEdit/${data._id}`);
+    navigate(`/tender-Edit/${data._id}`);
   };
 
   return (
     <div>
       <ListView
-        title="Project Detail"
+        title="Tender Tracking"
         buttonName="Add New"
-        buttonClass="btn btn-primary"
         onAddNewClick={handleAddNewClick}
         columns={columns.map(c => c.key)} // pass just keys to render table
         columnNames={columnNames}        // pass key-label map
