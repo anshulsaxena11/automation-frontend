@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { syncEmpData, empList, updateEmpStatus,centreList,srpiEmpTypeList,directoratesList } from '../../api/syncEmp/syncEmp'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import {postTaskManagerUpdate} from '../../api/TaskMember/taskMemberApi'
 import ListView from '../../components/listView/listView'
                                                                                 
 const AdminSyncEmploy = () =>{
@@ -33,7 +34,8 @@ const AdminSyncEmploy = () =>{
         'centre',
         "dir",
         'etpe',
-        'StatusNoida', 
+        'StatusNoida',
+        'taskForceMember' 
       ];
     
       const columnNames = {
@@ -42,7 +44,8 @@ const AdminSyncEmploy = () =>{
         centre: 'Centre',
         dir:'Directorates',
         etpe:'Employee Type',
-        StatusNoida: 'Status',  
+        StatusNoida: 'Status',
+        taskForceMember:' Task Force Member Status'  
       };
 
     const handleSync = async() =>{
@@ -71,12 +74,18 @@ const AdminSyncEmploy = () =>{
         setLoader(true);
         try{
             const response = await empList({page,limit:10,search:searchQuery.trim(),centre:selectedCentre?.value,StatusNoida:selectedStatus?.value,etpe:selectedType?.value,dir:selecteddir?.value})
+            console.log(response)
             const transformedData = response.data.map(item => ({
                 ...item,
                 StatusNoida: item.StatusNoida ? (
                   <span className="text-success fw-bold">Active</span>
                 ) : (
-                  <span className="text-danger fw-bold">Not Active</span>
+                  <span className="text-danger fw-bold">Inactive</span>
+                ),
+                taskForceMember:item.taskForceMember ==='Yes' ? (
+                 <span className="text-success fw-bold">Yes</span>
+                ):(
+                  <span className="text-danger fw-bold">No</span>
                 )
               }));
             setData(transformedData)
@@ -213,6 +222,23 @@ const AdminSyncEmploy = () =>{
       };
       fetchTypeData();
   }, []);
+
+  const handleTeamMember = async (empid) =>{
+    try{
+      const payload ={
+        id:empid._id,
+      }
+      await postTaskManagerUpdate(payload)
+       toast.success('Task Force Member has been updated',{
+          className: 'custom-toast custom-toast-success'
+      });
+      fetchEmpList();
+    }catch(error){
+       toast.error('Failed to Update Task Force Member.',{
+        className: 'custom-toast custom-toast-error',
+      }); 
+    }
+  }
    
     return(        
         <div className='admin-portal'>
@@ -254,6 +280,8 @@ const AdminSyncEmploy = () =>{
                 dirOptions={dirOptions}
                 selecteddir={selecteddir}
                 setSelecteddir={handleDirChange}
+                onCheckClickSecond={handleTeamMember}
+                statusMember={true}
               />
         </div>
         

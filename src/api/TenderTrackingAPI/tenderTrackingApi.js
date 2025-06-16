@@ -40,7 +40,7 @@ export const postTenderTrackingData = async (payload) => {
  */
 export const getTenderDetailsList = async ({ page = 1, limit = 10, search = "" }) => {
   try {
-    const response = await axiosInstance.get("/user/getTenderDetails", {
+    const response = await axiosInstance.get("/user/Tender", {
       params: { page, limit, search },
     });
     console.log(response);
@@ -55,3 +55,9 @@ export const getTenderDetailsList = async ({ page = 1, limit = 10, search = "" }
     };
   }
 };
+
+export const getEmpList = async()=> axiosInstance.get('/user/EmpListTF')
+
+export const getTrackingById = async(id) => axiosInstance.get(`/user/tenderTracking/${id}`).then(response => response.data).catch(error => { throw error });
+
+export const updateTenderById= async(id,payload)=> axiosInstance.put(`/user/tenderTracking/${id}`,payload)

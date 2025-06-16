@@ -24,8 +24,10 @@ import ToolsAndHardwareView from '../../pages/toolsandHardware/toolsAndHardwareV
 import TimelineEvent from '../../pages/Timeline/timeline.jsx'
 import PieChart from "../../pages/charts/piechartscomponent.jsx"
 import Dashboard from "../../pages/dashboard/dashboard.jsx"
-import TenderTracking from "../../pages/tender/tendertracking.jsx"
-import TenderList from "../../pages/tender/tenderlist.jsx"
+import TenderTracking from "../../pages/tender/TenderForm/tendertracking.jsx"
+import TenderList from "../../pages/tender/TenderList/tenderlist.jsx"
+import TenderTrackingEdit from "../../pages/tender/TenderEdit/tenderEdit.jsx"
+import TenderTrackingView from "../../pages/tender/TenderView/tenderView.jsx"
 import './contentBody.css'
 
 const ContentBody = ({ isSidebarExpanded }) => {
@@ -77,7 +79,8 @@ const ContentBody = ({ isSidebarExpanded }) => {
           <Route path="/Timeline" element={<TimelineEvent/>}/>
           <Route path="/Tender-Tracking" element={<TenderTracking/>}/>
           <Route path="/tender-list" element={<TenderList/>}/>
-          
+          <Route path="/tender-Edit/:id" element={<TenderTrackingEdit/>}/>
+          <Route path="/tender-View/:id" element={<TenderTrackingView/>}/>
         </Routes>
       </div>
     </div>
