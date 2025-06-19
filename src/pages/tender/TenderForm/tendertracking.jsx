@@ -6,6 +6,9 @@ import { Button, Spinner } from 'react-bootstrap';
 import { TiArrowBack } from "react-icons/ti";
 import { postTenderTrackingData, getEmpList } from '../../../api/TenderTrackingAPI/tenderTrackingApi';
 import { getStateList } from '../../../api/stateApi/stateApi';
+import PreviewModal from '../../../components/previewfile/preview';
+import { PiImagesSquareBold } from "react-icons/pi";
+import { FcDocument } from "react-icons/fc";
 import { IoIosSave } from "react-icons/io";
 import Select from 'react-select';
 
@@ -29,6 +32,10 @@ const TenderTracking = () => {
   const [selectedStateOption, setSelectedStateOption] = useState([])
   const [empListOption, setEmpListOption] =useState([])
   const [selectedEmpList, setSelectedEmpList] =useState([])
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [preview, setPreview] = useState(null);
+  const [fileType, setFileType] = useState(''); 
+  const [uploadedFile, setUploadedFile] = useState(null);
 
   const formatIndianNumber = (num) => {
     return new Intl.NumberFormat("en-IN").format(num);
@@ -83,9 +90,10 @@ const TenderTracking = () => {
       taskForce: data.taskForce,
       valueINR: data.rawValueINR || data.valueINR,
       status: 'Upload',
-      tenderDocument: data.tenderDocument,
+      tenderDocument: uploadedFile,
       lastDate: data.lastDate,
     };
+    console.log(payload)
     setLoading(true);
         try{
         const response = await postTenderTrackingData(payload);
@@ -181,6 +189,38 @@ const TenderTracking = () => {
       }));
 
     }
+const handleFileChange = (e) => {
+  const file = e.target.files[0];
+  setUploadedFile(file);
+
+  if (file) {
+    // ✅ Set in formData to satisfy validation
+    setFormData((prev) => ({
+      ...prev,
+      tenderDocument: file,
+    }));
+
+    setFileType(file.type);
+
+    if (file.type === 'application/pdf') {
+      const fileURL = URL.createObjectURL(file);
+      setPreview(fileURL);
+    } else if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+};
+
+  const handleCloseModal = () => {
+    setShowPreviewModal(false); 
+  };
+  const handlePreviewClick = () => {
+    setShowPreviewModal(true);
+  };
 
   return (
     <div className="container mt-4">
@@ -272,8 +312,37 @@ const TenderTracking = () => {
                 name="tenderDocument"
                 className="form-control"
                 accept=".pdf,.doc,.docx,image/*"
-                onChange={handleChange}
+                 onChange={(e) => {
+                    handleFileChange(e);
+                  }}
               />
+               {preview && (
+                <div
+                onClick={handlePreviewClick}
+                style={{ cursor: 'pointer', marginTop: '10px' }}
+              >
+                <h6>
+                {uploadedFile
+                  ? fileType.startsWith('image/') 
+                    ? <>
+                        <PiImagesSquareBold style={{ marginRight: '8px' }} />
+                        Preview Image
+                      </>
+                    : <>
+                        <FcDocument style={{ marginRight: '8px' }} />
+                        Preview Document
+                      </>
+                  : 'Preview File'} 
+              </h6>
+              </div>
+              )}
+              <PreviewModal
+                show={showPreviewModal}
+                onHide={handleCloseModal}
+                preview={preview}
+                fileType={fileType}
+              />
+                         
               {renderError("tenderDocument")}
             </Form.Group>
 

@@ -45,6 +45,7 @@ const ReportPage = () => {
   const [selectedProjectNameAdd,setSelectedProjectNameAdd] = useState('')
   const [showPreview, setShowPreview] = useState(false);
   const severityOptions = [
+     {value:"Critical",label:"Critical"},
     { value: "High", label: "High" },
     { value: "Medium", label: "Medium" },
     { value: "LOW", label: "LOW" },
@@ -535,6 +536,14 @@ const handleFileChange = (index, event) => {
 }, []);
 
   const handleCloseModal = () => setShowModalVulList(false);
+
+  const handleDeleteImage = (indexToDelete) => {
+  const updatedProofs = [...proofOfConcepts];
+  if (updatedProofs[indexToDelete]) {
+    updatedProofs[indexToDelete].preview = null; // or undefined
+  }
+  setProofOfConcepts(updatedProofs);
+};
   return (
     <div className="report-page">
      <ToastContainer  position="top-center" autoClose={5000} hideProgressBar={false} />
@@ -949,27 +958,78 @@ const handleFileChange = (index, event) => {
                         onChange={(e) => handleTextChange(index, e.target.value)}
                       />
                     </div>
-                    <div className="col-md-6 mt-3">
-                     {proof.preview ? (
-                        <img src={proof.preview} alt={`Pasted ${index}`} style={{ maxWidth: '100%', maxHeight: '400px' }} />
-                      ) : (
-                        <p>No image pasted yet</p>
-                      )}
-                    {/* <Form.Control type="file"  accept=".jpeg,.jpg" onChange={(e) => handleFileChange(index, e)}   ref={(el) => (fileInputRefs.current[index] = el)} />
-                    {proof.preview && (
-                      <div className="mt-2" style={{ cursor: 'pointer', marginTop: '10px' }}>
-                        <h6 variant="primary" onClick={() => setShowPreview(true)}>
-                          <PiImagesSquareBold style={{ marginRight: '8px' }} />
-                            Preview Image
-                        </h6>
-                        <PreviewModal 
-                          show={showPreview} 
-                          onHide={() => setShowPreview(false)} 
-                          preview={proof.preview} 
-                          fileType={proof.fileType} 
-                        />
+                    <div className="col-md-6">
+                        {proof.preview ? (
+                          <div
+                            style={{
+                              width: "100%",
+                              maxWidth: "300px",
+                              height: "200px",
+                              borderRadius: "6px",
+                              border: "1px solid #ccc",
+                              padding: "6px",
+                              background: "#f9f9f9",
+                              position: "relative",
+                              overflow: "hidden",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <img
+                              src={proof.preview}
+                              alt={`Pasted ${index}`}
+                              style={{
+                                maxWidth: "100%",
+                                maxHeight: "100%",
+                                objectFit: "contain",
+                                borderRadius: "4px",
+                                backgroundColor: "white",
+                              }}
+                            />
+                            <button
+                              onClick={() => handleDeleteImage(index)}
+                              style={{
+                                position: "absolute",
+                                top: "6px",
+                                right: "6px",
+                                background: "red",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "50%",
+                                width: "24px",
+                                height: "24px",
+                                cursor: "pointer",
+                                fontWeight: "bold",
+                                fontSize: "16px",
+                                lineHeight: "20px",
+                                textAlign: "center",
+                              }}
+                              title="Remove"
+                            >
+                              &times;
+                            </button>
+                          </div>
+                    ) : (
+                       <div
+                        style={{
+                          width: "700%",
+                          maxWidth: "400px",
+                          height: "65px",
+                          border: "2px dashed #ccc",
+                          borderRadius: "6px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "#888",
+                          backgroundColor: "#f8f9fa",
+                          fontStyle: "italic",
+                          textAlign: "center",
+                        }}
+                      >
+                        <p className="m-0">Paste Image Here</p>
                       </div>
-                    )} */}
+                    )}
                     </div>
                   </div>
                 ))}
