@@ -21,7 +21,15 @@ const TenderTrackingEdit =({ID}) =>{
     const [empListOption, setEmpListOption] =useState([])
     const [selectedEmpList, setSelectedEmpList] =useState([])
     const [slectedStatus, setSelectedStatus] = useState([])
+    const [file, setFile] = useState(null);
+    const [fileUrl, setFileUrl] = useState(null);
+    const [filePreviewUrl, setFilePreviewUrl] = useState("");
+    const [previewFileType, setPreviewFileType] = useState("");
     const [oneTime,setOneTime]=useState(true)
+    const [oneTimeStatus,setOneTimeStatus]=useState(true)
+    const [oneTimeTaskForce,setOneTimeTaskForce]=useState(true)
+    const [oneTimeFull,setOneTimeFull]=useState(true)
+    const [showModal, setShowModal] = useState(false);
     const StatusOption =[
         {value:"Upload",label:"Upload"},
         {value:"Bidding",label:"Bidding"},
@@ -84,6 +92,14 @@ const TenderTrackingEdit =({ID}) =>{
             try{
                 const data= await getTrackingById(trackingId)
                 const fetchedData = data.data
+                if(oneTimeFull){
+                 if (fetchedData.tenderDocument) {
+                    const fullUrl = fetchedData.tenderDocument.startsWith("http")
+                        ? fetchedData.tenderDocument
+                        : `${window.location.origin}${fetchedData.tenderDocument}`;
+                        setFileUrl(fullUrl)
+                        setFilePreviewUrl(fullUrl)
+                    }
                 if(fetchedData){
                     const formattedLastDate = fetchedData.lastDate
                         ? fetchedData.lastDate.split("T")[0]
@@ -95,7 +111,7 @@ const TenderTrackingEdit =({ID}) =>{
                     });
                 
                    
-                        if (fetchedData?.state && stateOption.length > 0) {
+                        if (oneTime && fetchedData?.state && stateOption.length > 0) {
                             const selectState = Array.isArray(fetchedData.state) ? fetchedData.state : [fetchedData.state];
                             const matchedState = selectState
                                 .map((state) => stateOption.find((item) => item.label === state))
@@ -103,9 +119,10 @@ const TenderTrackingEdit =({ID}) =>{
             
                                 setSelectedStateOption(matchedState);
                                 setValue("state", fetchedData?.state);
+                                setOneTime(false)
                         }
 
-                        if (fetchedData?.taskForce && empListOption.length > 0) {
+                        if (oneTimeTaskForce && fetchedData?.taskForce && empListOption.length > 0) {
                             const selectTaskForce = Array.isArray(fetchedData.taskForce) ? fetchedData.taskForce : [fetchedData.taskForce];
                             const matchedEmpList = selectTaskForce
                                 .map((taskForce) => empListOption.find((item) => item.label === taskForce))
@@ -113,9 +130,10 @@ const TenderTrackingEdit =({ID}) =>{
 
                                 setSelectedEmpList(matchedEmpList);
                                 setValue("taskForce", fetchedData?.taskForce);
+                                setOneTimeTaskForce(false)
                         }
 
-                        if (fetchedData?.status && StatusOption.length > 0) {
+                        if (oneTimeStatus && fetchedData?.status && StatusOption.length > 0) {
                             const selectStatus = Array.isArray(fetchedData.status) ? fetchedData.status : [fetchedData.status];
                             const matchedStatus = selectStatus
                                 .map((status) => StatusOption.find((item) => item.label === status))
@@ -123,8 +141,12 @@ const TenderTrackingEdit =({ID}) =>{
 
                                 setSelectedStatus(matchedStatus);
                                 setValue("status", fetchedData?.status);
+                                setOneTimeStatus(false)
                         }
-                        setOneTime(false)
+                    }
+                   
+                    setOneTimeFull(false)
+                
                     
                 }
             }catch(error){
@@ -133,11 +155,11 @@ const TenderTrackingEdit =({ID}) =>{
                 setLoading(false);
             }
         }
-         if(oneTime){
-            fetchTrackingTenderDetails()
-            setOneTime(false)
-         }
-    },[stateOption, empListOption, StatusOption, oneTime])
+        if(oneTimeFull){
+        fetchTrackingTenderDetails()
+        }
+            
+    },[stateOption, empListOption, StatusOption, oneTimeFull,oneTime,oneTimeStatus,oneTimeTaskForce])
 
     const handleBackClick = ()=>{
         navigate(`/tender-list`) 
@@ -162,10 +184,29 @@ const TenderTrackingEdit =({ID}) =>{
             formDataToSubmit.append("status",status)
             formDataToSubmit.append("lastDate",lastDate)
 
-            await updateTenderById(trackingId,formDataToSubmit)
+             if (file && file instanceof Blob) {
+                formDataToSubmit.append("tenderDocument", file, file.name);
+            } 
+
+           const response = await updateTenderById(trackingId,formDataToSubmit)
+           if (response.data.statusCode === 200){
+            setOneTimeFull(true)
+            setOneTime(true)
+            toast.success('Form Updated successfully!', {
+                className: 'custom-toast custom-toast-success',
+            });
+           } else{
+            setOneTimeFull(true)
+            setOneTime(true)
+            toast.error('Failed to submit the form.', {
+                className: 'custom-toast custom-toast-error',
+            });
+           }
 
         }catch(error){
 
+        }finally{
+            setLoading(false);
         }
     }
     const handleState =(selected)=>{
@@ -173,6 +214,24 @@ const TenderTrackingEdit =({ID}) =>{
         const selectedValues = selected?.label
         setValue("state", selectedValues);
     }
+
+    const handlePreviewClick = (url) => {
+        const fileType = getFileTypeFromUrl(url);
+        setFilePreviewUrl(url);
+        setPreviewFileType(fileType);
+        setShowModal(true);
+    };
+
+     const getFileTypeFromUrl = (url) => {
+        const extension = url?.split('.').pop()?.toLowerCase();
+        if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(extension)) {
+        return 'image/';
+        } else if (extension === 'pdf') {
+        return 'application/pdf';
+        } else {
+        return 'unknown';
+        }
+    };
 
     const handleTaskForcwMemberChange = (selected)=>{
       setSelectedEmpList(selected)
@@ -182,6 +241,8 @@ const TenderTrackingEdit =({ID}) =>{
 
     const handleStatusChange = (selected) =>{
         setSelectedStatus(selected)
+        const selectedValues = selected?.label
+        setValue("status", selectedValues);
     }
 
     return(
@@ -226,7 +287,7 @@ const TenderTrackingEdit =({ID}) =>{
                                 onChange={handleState}
                             />
                         </Form.Group>
-                        <Form.Group className="pt-4">
+                        <Form.Group className="pt-5 ">
                             <Form.Label className="fs-5 fw-bolder">Task Force Member<span className="text-danger">*</span></Form.Label>
                              <Select
                                 options={empListOption}
@@ -257,7 +318,29 @@ const TenderTrackingEdit =({ID}) =>{
                                 isDisabled={loading}
                             />
                         </Form.Group>
-                         <Form.Group className="pt-4">
+                        <Form.Group className="pt-4">
+                            <Form.Label className="fs-5 fw-bolder">Document Upload (PDF, DOC, Image)<span className="text-danger">*</span></Form.Label>
+                            <Form.Control 
+                            type="file" 
+                            accept=".jpg,.png,.pdf" 
+                            onChange={(e) => setFile(e.target.files[0])} 
+                        />
+                         {fileUrl && (
+                            <div className="mt-2" style={{ cursor: "pointer" }}>
+                                <h6 onClick={() => handlePreviewClick(filePreviewUrl)}>
+                                <PiImagesSquareBold style={{ marginRight: "8px" }} />
+                                Preview Uploaded File
+                                </h6>
+                            </div>
+                            )}
+                            <PreviewModal
+                            show={showModal}
+                            onHide={() => setShowModal(false)}
+                            preview={filePreviewUrl}
+                            fileType={previewFileType}
+                            />
+                        </Form.Group>
+                         <Form.Group className="pt-3">
                              <Form.Label className="fs-5 fw-bolder">Last Date<span className="text-danger">*</span></Form.Label>
                              <Form.Control
                                 type="date" 
@@ -266,7 +349,8 @@ const TenderTrackingEdit =({ID}) =>{
                         </Form.Group>
                     </div>
                 </div>
-                <Button type="submit" className="mt-4 ml-4" variant="primary" onClick={onSubmit} disabled={loading}>
+                <div className="d-flex align-items-center gap-3 ">
+                <Button type="submit" className=" my-5 ml-4" variant="primary" onClick={onSubmit} disabled={loading}>
                     {loading ? (
                         <Spinner animation="border" size="sm" />
                         ) : (
@@ -276,6 +360,7 @@ const TenderTrackingEdit =({ID}) =>{
                 <Button variant="danger" className='btn btn-success my-5' onClick={handleBackClick}>
                     <TiArrowBack />BACK
                 </Button>
+                </div>
             </form>
         </div>
     )

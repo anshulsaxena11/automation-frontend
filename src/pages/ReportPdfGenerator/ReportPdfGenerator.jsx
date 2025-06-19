@@ -369,9 +369,12 @@ const ReportPdfGenerator = () => {
                     } else if (item.sevirty === "Medium") {
                       bgColor = "orange";
                       textColor = "black";
-                    } else if (item.sevirty === "Low") {
+                    } else if (item.sevirty === "LOW") {
                       bgColor = "green";
                       textColor = "white";
+                    }else if (item.sevirty === "INFO") {
+                      bgColor = "#0000FF";
+                      textColor = "black";
                     }
 
                     return (
@@ -394,12 +397,16 @@ const ReportPdfGenerator = () => {
                               <>
                               <tr>
                                 <td style={{ backgroundColor: "#b6dde8" }}>Device Type</td>
-                                <td>{item.projectType}</td>
+                                <td>{item.devices}</td>
                               </tr>
                               <tr>
-                                <td style={{ backgroundColor: "#b6dde8" }}>Device Name/IP</td>
-                                <td>{item.projectType}</td>
-                              </tr>\
+                                <td style={{ backgroundColor: "#b6dde8" }}>Device Name</td>
+                                <td>{item.Name}</td>
+                              </tr>
+                              <tr>
+                                <td style={{ backgroundColor: "#b6dde8" }}>Device IP</td>
+                                <td>{item.ipAddress}</td>
+                              </tr>
                               </>
                             )}
 
@@ -425,10 +432,7 @@ const ReportPdfGenerator = () => {
                               <td style={{ backgroundColor:"#b6dde8" }}>Impact</td>
                               <td>{item.path}</td>
                             </tr>
-                             <tr>
-                              <td style={{ backgroundColor:"#b6dde8" }}>IP Adress</td>
-                              <td>127.0.0.1</td>
-                            </tr>
+                            
                             <tr>
                               <td style={{ backgroundColor:"#b6dde8" }}>Vulnerable Parameter</td>
                               <td>{item.vulnerableParameter}</td>

@@ -96,15 +96,15 @@ const MSWordPreview = ({ fullReport, projectDetailsReport }) => {
 
     
     try {
-      const watermarkUrl = "/images/Confidential.png";
-      const watermarkData = await fetchImageAsUint8Array(watermarkUrl);
+      //const watermarkUrl = "/images/Confidential.png";
+      //const watermarkData = await fetchImageAsUint8Array(watermarkUrl);
 
 
 const logoUrl = "/images/STPI_Preview.png"; // Replace with your actual logo path
 const logoData = await fetchImageAsUint8Array(logoUrl);
 
 // Combined header with logo and watermark
-const watermarkHeader = (watermarkData && logoData)
+const watermarkHeader = (logoData)
   ? new Header({
       children: [
         // Logo at the top-left
@@ -132,30 +132,6 @@ const watermarkHeader = (watermarkData && logoData)
             spacing: { after: 500 },
             alignment: AlignmentType.CENTER,
           }),
-        // Watermark centered behind content
-        new Paragraph({
-          children: [
-            new ImageRun({
-              data: watermarkData,
-              transformation: {
-                width: 700,
-                height: 1000,
-              },
-              floating: {
-                horizontalPosition: {
-                  align: "center",
-                },
-                verticalPosition: {
-                  align: "center",
-                },
-                wrap: {
-                  type: "none",
-                },
-                behindDocument: true,
-              },
-            }),
-          ],
-        }),
       ],
     })
   : new Header({ children: [] });
@@ -2865,26 +2841,28 @@ const watermarkHeader = (watermarkData && logoData)
             spacing: { after: 300 },
           })
         );
-          let bgColor = "inherit";
+          let bgColor = "#FFFFFF";
           if (item.sevirty === "High") {
                       bgColor = "#FF0000";
                     } else if (item.sevirty === "Medium") {
                       bgColor = "#FFA500";
                     } else if (item.sevirty === "Low") {
                       bgColor = "#008000";
+                    }else if (item.sevirty === "INFO") {
+                      bgColor = "#0000FF";
                     }
                   
 
         const rows = [
-  ["Project Name", safeText(item.projectName)],
+  ["Project Name", safeText(projectDetailsReport?.[0]?.projectName)],
   ["Project Type", safeText(item.projectType)],
-  item.projectType === 'Network Devices' && ["Device Type", safeText(item.projectType)],
-  item.projectType === 'Network Devices' && ["Device Name/IP", safeText(item.projectType)],
+  item.projectType === 'Network Devices' && ["Device Type", safeText(item.devices)],
+  item.projectType === 'Network Devices' && ["Device Name", safeText(item.Name)],
+  item.projectType === 'Network Devices' && ["Device Ip", safeText(item.ipAddress)],
   ["Vulnerability Name/Type", safeText(item.vulnerabilityName)],
   ["Severity", safeText(item.sevirty)],
   ["Description", safeText(item.description)],
   ["Location", safeText(item.path)],
-  ["IP Adress", safeText('127.0.0.1')],
   ["IMPACT", safeText(item.impact)],  
   ["Vulnerable Parameter", safeText(item.vulnerableParameter)],
   ["References", safeText(item.references)],
@@ -2906,7 +2884,7 @@ const watermarkHeader = (watermarkData && logoData)
           shading: {
             type: ShadingType.CLEAR,
             color: "auto",
-            fill: bgColor, // red background for severity
+            fill: bgColor, 
           },
         }),
       }),
@@ -2918,7 +2896,15 @@ const watermarkHeader = (watermarkData && logoData)
           const proofParagraphs = [];
 
           for (const proof of item.proofOfConcept) {
-            if (proof.description) {
+            if (proof.noOfSteps) {
+              proofParagraphs.push(
+                new Paragraph({
+                  children: [new TextRun(proof.noOfSteps)],
+                  spacing: { after: 200 },
+                })
+              );
+            }
+             if (proof.description) {
               proofParagraphs.push(
                 new Paragraph({
                   children: [new TextRun(proof.description)],
@@ -2938,6 +2924,7 @@ const watermarkHeader = (watermarkData && logoData)
                         transformation: {
                           width: 300,
                           height: 150,
+                          padding:50,
                         },
                       }),
                     ],

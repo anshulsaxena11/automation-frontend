@@ -15,7 +15,7 @@ const CategoryCount = () => {
   const [filteredData, setFilteredData] = useState([]);
 
   useEffect(() => {
-    fetch("http://192.168.2.22:8080/api/v1/user/report")
+    fetch("http://192.168.56.1:8080/api/v1/user/report")
       .then(res => res.json())
       .then(json => {
         const fetchedRecords = Array.isArray(json) ? json : json.data;  // rename local var

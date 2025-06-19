@@ -31,6 +31,7 @@ const EditReportForm = () => {
     const [selectedVulnerability, setSelectedVulnerability] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [proofOfConcepts, setProofOfConcepts] = useState([]);
+    const [proofs, setProofs] = useState([{ proofPreviwe: null }]);
     const [isUserSelection, setIsUserSelection] = useState(false); 
     const [data , setData] = useState(false);
     const [isUserTypeSelection, setIsUserTypeSelection] = useState(false);
@@ -62,9 +63,11 @@ const EditReportForm = () => {
 
     const sevirtyOptions =[
         {value:"", label: "Select Sevirity", isDisabled: true},
+        {value:"Critical",label:"Critical"},
         {value:"High", label: "High"},
         {value:"Medium", label: "Medium"},
-        {value:"Low", label: "Low"},
+        {value:"LOW", label: "LOW"},
+        {value:"INFO", label: "INFO"},
     ]
 
     const [selectedRound, setSelectedRound] = useState(null);
@@ -119,6 +122,8 @@ const EditReportForm = () => {
                     setValue("vulnerableParameter", fetchedData?.vulnerableParameter||"");
                     setValue("references", fetchedData?.references||"");
                     setValue("recomendation", fetchedData?.recomendation||"");
+                    setValue("Name", fetchedData?.Name||"");
+                    setValue("ipAddress", fetchedData?.ipAddress||"");
                 }
     
                 setValue("path", fetchedData?.path||"");
@@ -222,13 +227,13 @@ const EditReportForm = () => {
             if (firstTimeVulnarabilityUsed ? selectvurnavility : selectedVulnabiliyuType || selectedDeviceVulnability){
                 let ProjectType;
                 if(selectSecondVulnability){
-                     if (selectvurnavility === 'Devices' && deviceVulnability !== undefined){
+                     if (selectvurnavility === 'Network Devices' && deviceVulnability !== undefined){
                         ProjectType = firstTimeVulnarabilityUsed ? deviceVulnability : selectedDeviceVulnability;
                     }else{
                         ProjectType= firstTimeVulnarabilityUsed ? selectvurnavility : selectedVulnabiliyuType;
                     }
                 }else{
-                    if(selectedDeviceVulnability === 'undefined' || selectedVulnabiliyuType ==='Devices' ){
+                    if(selectedDeviceVulnability === 'undefined' || selectedVulnabiliyuType ==='Network Devices' ){
                         ProjectType = firstTimeVulnarabilityUsed ? deviceVulnability : selectedDeviceVulnability;
                     }else{
                         ProjectType= firstTimeVulnarabilityUsed ? selectvurnavility : selectedVulnabiliyuType;
@@ -337,24 +342,26 @@ const EditReportForm = () => {
     
       // Handle File Upload
       const handleFileChange = (index, event) => {
-        const file = event.target.files[0];
-    
-        if (!file) return; // Exit if no file is selected
-    
-        if (file.type !== "image/jpeg" && file.type !== "image/jpg") {
-            alert("Only JPEG and JPG files are allowed.");
-            return;
-        }
-    
-        setProofOfConcepts((prevSteps) => {
-            const updatedSteps = [...prevSteps];
-            updatedSteps[index] = { 
-                ...updatedSteps[index], 
-                proof: file 
-            };
-            return updatedSteps;
-        });
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (file.type !== "image/jpeg" && file.type !== "image/jpg") {
+    alert("Only JPEG and JPG files are allowed.");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const updatedProofs = [...proofOfConcepts];
+    updatedProofs[index] = {
+      ...updatedProofs[index],
+      proof: file,
+      proofPreviwe: reader.result,
     };
+    setProofOfConcepts(updatedProofs);
+  };
+  reader.readAsDataURL(file);
+};
 
     const handleProjectName = (selected)=>{
         setSelectedOptions(selected)
@@ -475,7 +482,7 @@ const EditReportForm = () => {
         setIsUserProjectSelection(true)
         const selectedString= selectedOption && selectedOption.label ? String(selectedOption.label) : '';
         setSelectedVulnabiliyuType(selectedString)
-        if(selectedString !== 'Devices'){
+        if(selectedString !== 'Network Devices'){
             setSelectDevice(null)
         }
         setValue("projectType",selectedOption.label)
@@ -509,6 +516,40 @@ const EditReportForm = () => {
         setPreviewFileType(fileType);
         setShowModal(true);
       };
+
+  const handlePasteImage = (e, index) => {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+
+  for (let item of items) {
+    if (item.kind === "file" && item.type.startsWith("image/")) {
+      const file = item.getAsFile();
+      const reader = new FileReader();
+      reader.onload = () => {
+        const updatedProofs = [...proofOfConcepts];
+        updatedProofs[index] = {
+          ...updatedProofs[index],
+          proof: file,
+          proofPreviwe: reader.result,
+        };
+        setProofOfConcepts(updatedProofs);
+      };
+      reader.readAsDataURL(file);
+      break;
+    }
+  }
+};
+
+const handleDeleteImage = (index) => {
+  const updatedProofs = [...proofOfConcepts];
+  updatedProofs[index] = {
+    ...updatedProofs[index],
+    proof: "",
+    proofPreviwe: "", 
+  };
+  setProofOfConcepts(updatedProofs);
+};
+
 
     return (
         <div className="container">
@@ -547,18 +588,26 @@ const EditReportForm = () => {
                                 getOptionValue={(e) => e.value}
                             />
                         </Form.Group>
-                         <Form.Group>
-                            <Form.Label className="fs-5 pt-3 fw-bolder">sevirity<span className="text-danger">*</span></Form.Label>
-                            <Select
-                                name="sevirty"
-                                options={sevirtyOptions}
-                                value={selectedSevirity}
-                                onChange={handleSevirityChange}
-                                isLoading={loading}
-                                getOptionLabel={(e) => e.label}
-                                getOptionValue={(e) => e.value}
+                        <Form.Group>
+                         <Form.Label className="fs-5 fw-bolder pt-3">Device Name<span className="text-danger">*</span></Form.Label>
+                         <Form.Control
+                                type="text" 
+                                {...register("Name")} 
                             />
                         </Form.Group>
+                         <Form.Group>
+                             <Form.Label className={`fs-5 pt-3 fw-bolder ${selectedVulnabiliyuType !== "Network Devices" ? "pt-3" : ""}`} >Vulnerability Name/Type<span className="text-danger">*</span></Form.Label>
+                             <Select
+                                name="vulnerabilityName"
+                                options={vulnerabilityOptions}
+                                value={selectedVulnerability}
+                                onChange={handleVulnerabilityChange}
+                                isLoading={loading}
+                                isSearchable={true}
+                                onInputChange={(newValue) => setSearchQuery(newValue)}
+                            />
+                        </Form.Group>
+                       
                     </div>
                     <div className="col-sm-6 col-md-6 col-lg-6">
                         <Form.Group>
@@ -571,7 +620,7 @@ const EditReportForm = () => {
                                 isLoading={loading}
                             />
                         </Form.Group>
-                        {(selectedVulnabiliyuType  === "Devices" || !devicesData) && (
+                        {(selectedVulnabiliyuType  === "Network Devices" || devicesData) && (
                             <Form.Group>
                                 <Form.Label className="fs-5 pt-3 fw-bolder">
                                 Devices<span className="text-danger">*</span>
@@ -585,24 +634,30 @@ const EditReportForm = () => {
                                 />
                             </Form.Group>
                             )}
-
-                        <Form.Group>
-                             <Form.Label className={`fs-5 pt-3 fw-bolder ${selectedVulnabiliyuType !== "Devices" ? "pt-3" : ""}`} >Vulnerability Name/Type<span className="text-danger">*</span></Form.Label>
-                             <Select
-                                name="vulnerabilityName"
-                                options={vulnerabilityOptions}
-                                value={selectedVulnerability}
-                                onChange={handleVulnerabilityChange}
+                          <Form.Group>
+                         <Form.Label className="fs-5 pt-3 fw-bolder">IP Address<span className="text-danger">*</span></Form.Label>
+                         <Form.Control
+                                type="text" 
+                                {...register("ipAddress")} 
+                            />
+                        </Form.Group>
+                         <Form.Group>
+                            <Form.Label className="fs-5 pt-3 fw-bolder">sevirity<span className="text-danger">*</span></Form.Label>
+                            <Select
+                                name="sevirty"
+                                options={sevirtyOptions}
+                                value={selectedSevirity}
+                                onChange={handleSevirityChange}
                                 isLoading={loading}
-                                isSearchable={true}
-                                onInputChange={(newValue) => setSearchQuery(newValue)}
+                                getOptionLabel={(e) => e.label}
+                                getOptionValue={(e) => e.value}
                             />
                         </Form.Group>
                     </div>
                 </div>
                 <div className="row">
                     <Form.Group>
-                         <Form.Label className="fs-5 fw-bolder">Description<span className="text-danger">*</span></Form.Label>
+                         <Form.Label className="fs-5 pt-3 fw-bolder">Description<span className="text-danger">*</span></Form.Label>
                          <Form.Control
                                 type="text" 
                                 as='textarea'
@@ -610,7 +665,7 @@ const EditReportForm = () => {
                             />
                     </Form.Group>
                     <Form.Group>
-                         <Form.Label className="fs-5 fw-bolder">Path<span className="text-danger">*</span></Form.Label>
+                         <Form.Label className="fs-5 pt-3 fw-bolder">Path<span className="text-danger">*</span></Form.Label>
                          <Form.Control
                                 type="text" 
                                 as='textarea'
@@ -618,7 +673,7 @@ const EditReportForm = () => {
                             />
                     </Form.Group>
                     <Form.Group>
-                         <Form.Label className="fs-5 fw-bolder">Impact<span className="text-danger">*</span></Form.Label>
+                         <Form.Label className="fs-5 pt-3 fw-bolder">Impact<span className="text-danger">*</span></Form.Label>
                          <Form.Control
                             type="text" 
                             as='textarea'
@@ -626,7 +681,7 @@ const EditReportForm = () => {
                         />
                     </Form.Group>
                     <Form.Group>
-                         <Form.Label className="fs-5 fw-bolder">Vulnerable Parameter<span className="text-danger">*</span></Form.Label>
+                         <Form.Label className="fs-5 pt-3 fw-bolder">Vulnerable Parameter<span className="text-danger">*</span></Form.Label>
                          <Form.Control
                             type="text" 
                             as='textarea'
@@ -634,14 +689,14 @@ const EditReportForm = () => {
                         />
                     </Form.Group>
                     <Form.Group>
-                         <Form.Label className="fs-5 fw-bolder">References (CVE/ Bug / OWASP 2017)<span className="text-danger">*</span></Form.Label>
+                         <Form.Label className="fs-5 pt-3 fw-bolder">References (CVE/ Bug / OWASP 2017)<span className="text-danger">*</span></Form.Label>
                          <Form.Control
                             type="text" 
                             as='textarea'
                             {...register("references")} 
                         />
                     </Form.Group>
-                    <Form.Group className="mb-3" controlId="ProofOfConcept">
+                    <Form.Group className="mb-3 pt-3" controlId="ProofOfConcept">
                     <Form.Label className="fs-5 fw-bolder">
                         Proof Of Concept <span className="text-danger">*</span>
                     </Form.Label>
@@ -664,42 +719,59 @@ const EditReportForm = () => {
                                         onChange={(e) => handleTextChange(index, e.target.value)}
                                     />
                                 </div>
-                                <div className="col-md-6 mt-3">
-                                        <Form.Control type="file" accept=".jpeg,.jpg" onChange={(e) => handleFileChange(index, e)} />
-                                    <div className="row">
-                                        {/* <div className="col-sm-5 col-md-5 col-lg-5">
-                                            {proof.proof && (
-                                                <div className="mt-2" style={{ cursor: "pointer", marginTop: "10px" }}>
-                                                    <h6 variant="primary" onClick={() => handlePreview(proof.proof)}>
-                                                        <PiImagesSquareBold style={{ marginRight: "8px" }} /> Preview Image
-                                                    </h6>
-                                                </div>
-                                                
-                                            )}
-                                        </div> */}
-                                        <div className="col-sm-7 col-md-7 col-lg-7">
-                                            <div className="col-md-6 ">
-                                                {proof.proofPreviwe && (
-                                                    <div className="mt-2" style={{ cursor: "pointer", marginTop: "10px" }}>
-                                                        <h6 variant="primary" onClick={() => handlePreviewClick(proof.proofPreviwe)}>
-                                                            <PiImagesSquareBold style={{ marginRight: "8px" }} />Uploaded
-                                                        </h6>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                        {/* <PreviewModal 
-                                            show={showModal} 
-                                            onHide={() => setShowModal(false)} 
-                                            preview={proof.preview} 
-                                            fileType={proof.fileType} 
-                                        /> */}
-                                        <PreviewModal 
-                                            show={showModal} 
-                                            onHide={() => setShowModal(false)} 
-                                            preview={filePreview} 
-                                            fileType={previewFileType} 
+                             <div className="col-md-6 ">
+                                 <div
+                                    className="form-control position-relative"
+                                    contentEditable
+                                    onPaste={(e) => handlePasteImage(e, index)}
+                                    style={{
+                                        minHeight: "60px",
+                                        border: "2px dashed #ccc",
+                                        padding: "10px",
+                                        overflow: "hidden",
+                                    }}
+                                    >
+                                    {!proof.proofPreviwe ? (
+                                        <p style={{ color: "#999" }}>Paste an image here (Ctrl+V)</p>
+                                    ) : (
+                                        <div style={{ position: "relative", display: "inline-block" }}>
+                                        <img
+                                            src={proof.proofPreviwe}
+                                            alt="Preview"
+                                            style={{ 
+                                                width: "100%",              
+                                                maxWidth: "300px",          
+                                                maxHeight: "200px",         
+                                                objectFit: "contain",      
+                                                borderRadius: "6px",
+                                                border: "1px solid #ccc",
+                                                padding: "2px",
+                                                background: "#fff"
+                                             }}
                                         />
+                                        <span
+                                            onClick={() => handleDeleteImage(index)}
+                                            style={{
+                                            position: "absolute",
+                                            top: "-10px",
+                                            right: "-10px",
+                                            background: "#dc3545",
+                                            color: "#fff",
+                                            borderRadius: "50%",
+                                            width: "24px",
+                                            height: "24px",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            cursor: "pointer",
+                                            fontWeight: "bold",
+                                            boxShadow: "0 0 2px rgba(0,0,0,0.5)"
+                                            }}
+                                        >
+                                            &times;
+                                        </span>
+                                        </div>
+                                    )}
                                     </div>
                                 </div>
                             </div>

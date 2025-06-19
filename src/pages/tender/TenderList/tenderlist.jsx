@@ -18,7 +18,7 @@ const TenderDetailsList = () => {
     { key: 'tenderName', label: 'Tender Name' },
     { key: 'organizationName', label: 'Organization' },
     { key: 'state', label: 'State' },
-    { key: 'taskForce', label: 'Task Force' },
+    { key: 'taskForce', label: 'Task Force Member' },
     { key: 'valueINR', label: 'Value (INR)' },
     { key: 'status', label: 'Status' },
     { key: 'lastDate', label: 'Last Date' },
