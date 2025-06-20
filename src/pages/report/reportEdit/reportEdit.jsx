@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
-import { updateReport } from "../../../api/reportApi/reportApi";
+import { updateReport, deleteReportBYId } from "../../../api/reportApi/reportApi";
 import { getProjectNameList, getProjectTypeList } from "../../../api/ProjectDetailsAPI/projectDetailsApi";
 import { Form, Button, Spinner } from "react-bootstrap";
 import { useParams, useNavigate } from "react-router-dom";
+import { MdDelete } from "react-icons/md";
 import { useForm, Controller } from "react-hook-form";
 import { getVulnerabilityList } from '../../../api/vulnerabilityApi/vulnerability'
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -113,7 +114,6 @@ const EditReportForm = () => {
         const fetchReport = async () => {
             try {
                 const response = await updateReport(id);
-                console.log(response)
                 const fetchedData = response?.data?.reportDetails;
                 setDevicesData(fetchedData?.devices);
                 if(!data){
@@ -550,6 +550,28 @@ const handleDeleteImage = (index) => {
   setProofOfConcepts(updatedProofs);
 };
 
+const handleDelete = async (id) => {
+  try {
+    const response = await deleteReportBYId(id);
+    console.log(response)
+
+    if (response.statusCode === 200) {
+      toast.success(response.message, {
+            className: 'custom-toast custom-toast-success',
+        });
+         navigate(`/report`);
+
+    } else {
+        toast.error(response.message, {
+            className: 'custom-toast custom-toast-error',
+        });
+    }
+  } catch (error) {
+     toast.error(error, {
+        className: 'custom-toast custom-toast-error',
+    });
+  }
+};
 
     return (
         <div className="container">
@@ -574,6 +596,10 @@ const handleDeleteImage = (index) => {
                                 value={selectedOptions}
                                 onChange={handleProjectName}
                                 isLoading={loading}
+                                isDisabled={true}         
+                                isSearchable={false}        
+                                menuIsOpen={false}         
+                                className="bg-light" 
                             />
                         </Form.Group>
                         <Form.Group>
@@ -586,6 +612,10 @@ const handleDeleteImage = (index) => {
                                 isLoading={loading}
                                 getOptionLabel={(e) => e.label}
                                 getOptionValue={(e) => e.value}
+                                isDisabled={true}         
+                                isSearchable={false}        
+                                menuIsOpen={false}         
+                                className="bg-light" 
                             />
                         </Form.Group>
                         <Form.Group>
@@ -618,6 +648,10 @@ const handleDeleteImage = (index) => {
                                 value={selectedProjectType}
                                 onChange={handleProjecType}
                                 isLoading={loading}
+                                isDisabled={true}         
+                                isSearchable={false}        
+                                menuIsOpen={false}         
+                                className="bg-light" 
                             />
                         </Form.Group>
                         {(selectedVulnabiliyuType  === "Network Devices" || devicesData) && (
@@ -631,6 +665,10 @@ const handleDeleteImage = (index) => {
                                 value={selectDevice}
                                 onChange={handleDevice}
                                 isLoading={loading}
+                                isDisabled={true}         
+                                isSearchable={false}        
+                                menuIsOpen={false}         
+                                className="bg-light" 
                                 />
                             </Form.Group>
                             )}
@@ -792,16 +830,21 @@ const handleDeleteImage = (index) => {
                         />
                     </Form.Group>
                 </div>
-                 <Button type="submit" className="mt-3 ml-4" variant="success" onClick={onSubmit} disabled={loading}>
+                 <Button type="submit" className="mt-3 ml-4" variant="primary" onClick={onSubmit} disabled={loading}>
                     {loading ? (
                         <Spinner animation="border" size="sm" />
                         ) : (
-                            <>
-                            <FaEdit /> Edit
-                        </>
+                             <span className="d-flex align-items-center">
+                            <FaEdit className='me-1'/> Edit
+                        </span>
                         )}
                 </Button>
-                <Button variant="danger" className="mt-3 mx-4" onClick={handleBackClick}><TiArrowBack />BACK</Button>
+                <Button variant="danger" className="mt-3 mx-4" onClick={()=>handleDelete(id)}> 
+                    <span className="d-flex align-items-center">
+                        <MdDelete className="me-1" /> Delete
+                    </span>
+                </Button>
+                {/* <Button variant="danger" className="mt-3 mx-4" onClick={handleBackClick}><TiArrowBack />BACK</Button> */}
             </form>
         </div>
     );

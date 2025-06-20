@@ -20,6 +20,8 @@ import FormComponent from '../../../components/formComponent/formcomponent'
 import PopupForm from '../../../components/PopBoxForm/PopupBoxForm'
 import { IoIosSave,IoMdAdd } from "react-icons/io";
 import { TiArrowBack } from "react-icons/ti";
+import { FaEye } from "react-icons/fa";
+import { FcDocument } from 'react-icons/fc'; 
 import'./report.css'
 
 const ReportPage = () => {
@@ -31,8 +33,10 @@ const ReportPage = () => {
   const [vulnerabilityOptions, setVulnerabilityOptions] = useState([]);
   const [selectedVulnerability, setSelectedVulnerability] = useState(null);
   const [showModalVul, setShowModalVul] = useState(false);
+  const [showModalVulFull, setShowModalVulFull] = useState(false);
   const [searchQuery, setSearchQuery] = useState(""); 
   const [ProjectType, setProjectType] = useState("");
+  const [selectedVulnerabilityPoc, setSelectedVulnerabilityPoc] = useState(null);
   const [round, setRound] = useState('');
   const [addVulnerability,setAddVulnerability] = useState();
   const [device, setDevice] = useState([]);
@@ -66,7 +70,8 @@ const ReportPage = () => {
   const [addReferance,setAddReferance] = useState("")
   const [addRecomendation,setAddRecomendation] = useState("")
   const [addSevirity,setAddSevirity] = useState("")
-  const [showModal, setShowModal] = useState(false); 
+  const [showModal, setShowModal] = useState(false);
+  const [showModalPoc, setShowModalPoc] = useState(false);  
   const [showModalVulList, setShowModalVulList] = useState(false); 
   const [showVulLisst,setShowVulList] = useState([])
   const [imageSrc, setImageSrc] = useState(null);
@@ -74,6 +79,8 @@ const ReportPage = () => {
   const name = watch("name");
   const deviceValue = watch("device");
   const ipAddress = watch('ipAddress')
+  const [filePreview, setFilePreview] = useState('');
+  const [previewFileType, setPreviewFileType] = useState('');
  
  useEffect(() => {
   setValue("Path", ipAddress); // ← This would cause what you're describing
@@ -104,11 +111,10 @@ const ReportPage = () => {
           Name: name,
           ipAddress: ipAddress,
         });
-        console.log(response.data)
         setShowVulList(response.data); 
       }
     } catch (error) {
-      console.error("Error fetching vulnerabilities:", error);
+      console.error("Error fetching vulnerabilities:");
     } finally {
       setLoading(false);
     }
@@ -125,7 +131,6 @@ const ReportPage = () => {
         if (ProjectType && (ProjectType !== "Network Devices" || selectDevice)){
           const projectType = ProjectType === 'Network Devices' && selectDevice ? selectDevice.label : ProjectType;
           const response = await getVulnerabilityList({ProjectType:projectType});
-          console.log(response) 
           const vulnerabilities = response.data;
           setVulnerabilityData(vulnerabilities)
   
@@ -507,6 +512,10 @@ const handleFileChange = (index, event) => {
       });
     }
   }
+  const handleShowModalVulListFull =(vulnerabilityName)=>{
+    setSelectedVulnerabilityPoc(vulnerabilityName)
+    setShowModalVulFull(true)
+  }
   useEffect(() => {
   const handlePaste = (e) => {
     const clipboardItems = e.clipboardData.items;
@@ -537,6 +546,8 @@ const handleFileChange = (index, event) => {
 
   const handleCloseModal = () => setShowModalVulList(false);
 
+  const handleCloseModelFull = () => setShowModalVulFull(false)
+
   const handleDeleteImage = (indexToDelete) => {
   const updatedProofs = [...proofOfConcepts];
   if (updatedProofs[indexToDelete]) {
@@ -544,18 +555,52 @@ const handleFileChange = (index, event) => {
   }
   setProofOfConcepts(updatedProofs);
 };
+
+const handlePreviewClick = (url) => {
+    const fileType = getFileTypeFromUrl(url);
+    setFilePreview(url); // Directly set the URL for preview
+    setPreviewFileType(fileType);
+    setShowModalPoc(true);
+  };
+
+  const getFileTypeFromUrl = (url) => {
+    const extension = url?.split('.').pop(); 
+
+    if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].includes(extension)) {
+      return 'image/'; 
+    } else if (extension === 'pdf') {
+      return 'application/pdf'; 
+    } else {
+      return 'unknown';
+    }
+  };
+  
   return (
     <div className="report-page">
      <ToastContainer  position="top-center" autoClose={5000} hideProgressBar={false} />
-     <PopupForm show={showModalVulList} handleClose={handleCloseModal} title="Vulnerability List" showFooter={false}>
+     <PreviewModal 
+        show={showModalPoc} 
+        onHide={() => setShowModalPoc(false)} 
+        preview={filePreview} 
+        fileType={previewFileType} 
+      />
+     <PopupForm show={showModalVulList} handleClose={handleCloseModal} title="Vulnerability List" showFooter={false}  dialogClassName="modal-xl" dimmed={showModalVulFull}>
         <div>
           {showVulLisst.length > 0 ? (
-              <div style={{ maxHeight: '400px', overflowY: 'auto',maxWidth:'1000px'}}>
-                <Table striped bordered hover responsive style={{ maxWidth: '1000px', margin: 'auto' }}>
+              <div style={{ maxHeight: '400px', overflowY: 'auto',maxWidth:'1200px'}}>
+                <Table striped bordered hover responsive style={{ maxWidth: '1200px', margin: 'auto' }}>
                   <thead>
                       <tr>
                         <th>S.No</th>
                         <th>Vulnerability Name</th>
+                        <th>severity</th>
+                        <th>Description</th>
+                        <th>Path</th>
+                        <th>Impact</th>
+                        <th>Vulnerable Parameter</th>
+                        <th>Referance</th>
+                        <th>Recomendation</th>
+                        <th>Proof Of Concept</th>
                       </tr>
                   </thead>
                   <tbody>
@@ -563,6 +608,14 @@ const handleFileChange = (index, event) => {
                       <tr key={index}>
                         <td>{index + 1}</td>
                         <td>{vulnerabilityName.vulnerabilityName}</td>
+                        <td>{vulnerabilityName.sevirty}</td>
+                        <td>{vulnerabilityName.description}</td>
+                        <td>{vulnerabilityName.path}</td>
+                        <td>{vulnerabilityName.impact}</td>
+                        <td>{vulnerabilityName.vulnerableParameter}</td>
+                        <td>{vulnerabilityName.references}</td>
+                        <td>{vulnerabilityName.recomendation}</td>
+                        <td><FaEye style={{ cursor: 'pointer' }} onClick={()=>handleShowModalVulListFull(vulnerabilityName)}/></td>
                       </tr>
                     ))}
                   </tbody>
@@ -573,8 +626,52 @@ const handleFileChange = (index, event) => {
           )}
         </div>
      </PopupForm>
+      <PopupForm show={showModalVulFull} handleClose={handleCloseModelFull} title="Proof Of Concept" showFooter={false} dialogClassName="modal-xl" >
+         {selectedVulnerabilityPoc?.proofOfConcept?.length > 0 ? (
+          <Table bordered hover>
+            <thead>
+              <tr>
+                <th>No. of Steps</th>
+                <th>Description</th>
+                <th>Proof</th>
+              </tr>
+            </thead>
+            <tbody>
+              {selectedVulnerabilityPoc.proofOfConcept.map((item, idx) => (
+                <tr key={idx}>
+                  <td>{item.noOfSteps || "N/A"}</td>
+                  <td>{item.description || "N/A"}</td>
+                  <td>
+                    {item.proof ? (
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handlePreviewClick(item.proof);
+                        }}
+                        className="btn btn-link"
+                      >
+                        {getFileTypeFromUrl(item.proof).startsWith("image/") ? (
+                          <PiImagesSquareBold style={{ marginRight: "8px" }} />
+                        ) : (
+                          <FcDocument style={{ marginRight: "8px" }} />
+                        )}
+                        Preview
+                      </a>
+                    ) : (
+                      "N/A"
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        ) : (
+          <p>No Proof of Concept available.</p>
+        )}
+      </PopupForm>
      <PopupForm
-         show={showModal}
+        show={showModal}
         handleClose={handleClose}
         title="Add Vulnerability Name/Type"   
         showFooter={true}      
