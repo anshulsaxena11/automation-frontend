@@ -6,39 +6,24 @@ import axiosInstance from "../axiosconfig";
  */
 
 export const postTenderTrackingData = async (payload) => {
+  const formData = new FormData();
 
-   try {
-    // 🔍 Step 1: Check if tender name is unique
-    const checkResponse = await axiosInstance.get('/user/checkTenderName', {
-      params: { tenderName: payload.tenderName },
-    });
-
-    if (checkResponse.data.exists) {
-      return {
-        statusCode: 400,
-        message: 'Tender name already exists. Please use a unique name.',
-      };
+  Object.keys(payload).forEach((key) => {
+    if (key !== 'tenderDocument') {
+      formData.append(key, payload[key]);
     }
+  });
 
-    // 📦 Step 2: Build FormData
-    const formData = new FormData();
-    Object.keys(payload).forEach((key) => {
-      if (key !== 'tenderDocument') {
-        formData.append(key, payload[key]);
-      }
-    });
-    formData.append('file', payload.tenderDocument);
 
-    // 🚀 Step 3: Post the data
+  formData.append('file', payload.tenderDocument);
+
+  try {
     const response = await axiosInstance.post('/user/TenderTrackingDetails', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-
     return response.data;
-
   } catch (error) {
     console.error('Error in submitting personal data:', error);
-
     if (error.response) {
       return error.response.data;
     } else {
@@ -84,10 +69,10 @@ export const postTenderTrackingData = async (payload) => {
 /**
  * Fetch tender details with pagination and search.
  */
-export const getTenderDetailsList = async ({ page = 1, limit = 10, search = "", isDeleted= "false" }) => {
+export const getTenderDetailsList = async ({ page = 1, limit = 10, search = "" }) => {
   try {
     const response = await axiosInstance.get("/user/Tender", {
-      params: { page, limit, search, isDeleted: isDeleted.toString(), },
+      params: { page, limit, search },
     });
     console.log(response);
     return response.data;
@@ -112,11 +97,4 @@ export const getTrackingById = async(id) => axiosInstance.get(`/user/tenderTrack
             "Content-Type": "multipart/form-data"
         }
     });
-}
- export const deleteTenderById = async (id) => {
-    return await axiosInstance.put(`/user/soft-delete/${id}`,{},{
-        headers: {
-            "Content-Type": "application/json"
-        }
-    });
-}
+};

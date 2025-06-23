@@ -3,9 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getTenderDetailsList } from '../../../api/TenderTrackingAPI/tenderTrackingApi';
 import ListView from '../../../components/listView/listView';
-import {deleteTenderById} from '../../../api/TenderTrackingAPI/tenderTrackingApi'
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 const TenderDetailsList = () => {
   const [data, setData] = useState([]);
@@ -40,7 +37,6 @@ const TenderDetailsList = () => {
         page,
         search: searchQuery.trim(),
         limit: 10,
-        isDeleted: true,
       });
 
       const transformedData = (response?.data || []).map(item => ({
@@ -90,45 +86,9 @@ const TenderDetailsList = () => {
   const handleEditClick = (data) => {
     navigate(`/tender-Edit/${data._id}`);
   };
-  const handleDeleteClick = async (data) => {
-  const confirmDelete = window.confirm(`Are you sure you want to delete tender "${data.tenderName}"?`);
-
-  if (!confirmDelete) {
-    console.log('Deletion cancelled');
-    toast.info('Deletion cancelled.');
-    return;
-  }
-
-  try {
-    const response = await deleteTenderById(data._id);
-    
-    if (response.data.message) {
-      toast.success(response.data.message);
-
-      // ✅ Reload tender list after delete
-      const updatedData = await getTenderDetailsList({
-        page,
-        search: searchQuery.trim(),
-        limit: 10,
-        isDeleted: true // explicitly filter active tenders
-      });
-
-      // ✅ Update your state here (assuming setTenderData or similar)
-      setData(updatedData.data);
-
-    } else {
-      toast.error("Failed to delete tender.");
-    }
-  } catch (error) {
-    console.error("Delete error:", error);
-    toast.error("Error deleting tender.");
-  }
-};
 
   return (
-    
     <div>
-      <ToastContainer  position="top-center" autoClose={5000} hideProgressBar={false} />
       <ListView
         title="Tender Tracking"
         buttonName="Add New"
@@ -144,7 +104,6 @@ const TenderDetailsList = () => {
         loading={loading}
         onViewClick={handleViewClick}
         onEditClick={handleEditClick}
-        onDeleteClick={handleDeleteClick}
         showEditView={true}
       />
     </div>

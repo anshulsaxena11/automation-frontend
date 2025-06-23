@@ -97,19 +97,10 @@ const TenderTracking = () => {
     setLoading(true);
         try{
         const response = await postTenderTrackingData(payload);
-         if(response.statusCode === 400){
-         toast.error(response.message, {
-            className: 'custom-toast custom-toast-error',
-          });          
-        }else
-        if(response.statusCode === 200){
+         if(response.statusCode === 200){
          toast.success('Tender submitted successfully!', {
             className: 'custom-toast custom-toast-success',
           });
-          setTimeout(() => {
-          navigate('/tender-list');
-          }, 3000);
-          
         }
         }catch(error){
               toast.error('Failed to submit the form.', {
@@ -315,7 +306,7 @@ const handleFileChange = (e) => {
             </Form.Group>
 
            <Form.Group className="mb-3" >
-              <Form.Label className="fs-5 fw-bolder">Tender Document Upload (PDF, DOC, Image)<span className="text-danger">*</span></Form.Label>
+              <Form.Label className="fs-5 fw-bolder">Document Upload (PDF, DOC, Image)<span className="text-danger">*</span></Form.Label>
               <input
                 type="file"
                 name="tenderDocument"
