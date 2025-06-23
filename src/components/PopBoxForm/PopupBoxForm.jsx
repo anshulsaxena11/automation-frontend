@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { Modal, Button, Spinner } from 'react-bootstrap';
 import toast from 'react-hot-toast';
+import './popupBoxForm.css'
 
-const PopupForm = ({ show, handleClose, title, children, showFooter, footerText, handleAdd }) => {
+const PopupForm = ({ show, handleClose, title, children, showFooter, footerText, handleAdd ,dialogClassName, dimmed = false  }) => {
   const [loading, setLoading] = useState(false);
 
-  // Handle add button click, call provided function, handle loading state and error/success
+  
   const handleAddClick = async () => {
     setLoading(true);
     try {
-      await handleAdd(); // Call the provided handleAdd function
+      await handleAdd(); 
       toast.success("Successfully added!");
     } catch (error) {
       toast.error("Failed to add. Please try again.");
@@ -20,7 +21,7 @@ const PopupForm = ({ show, handleClose, title, children, showFooter, footerText,
   };
 
   return (
-    <Modal show={show} onHide={handleClose}>
+    <Modal show={show} onHide={handleClose}  dialogClassName={`${dialogClassName || ''} ${dimmed ? 'popup-dimmed' : ''}`.trim()}>
       <Modal.Header closeButton>
         <Modal.Title>{title}</Modal.Title>
       </Modal.Header>

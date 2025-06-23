@@ -24,7 +24,7 @@ export const postReport = async (payload) => {
     });
 };
 
-export const getReportList = async ({ page = 1, limit = 10, search = "" }) => axiosInstance.get("/user/report", { params: { page, limit, search } }).then(response => response.data);
+export const getReportList = async ({ page = 1, limit = 10, search = "", round="", devices="",projectType="",projectName="" }) => axiosInstance.get("/user/report", { params: { page, limit, search, round, devices, projectType, projectName } }).then(response => response.data);
 export const getReportById = async (id) => await axiosInstance.get(`/user/report/${id}`).then(response => response.data).catch(error => { throw error });
 export const updateReport = async (id, formData) => {
     const config = {
@@ -36,11 +36,13 @@ export const updateReport = async (id, formData) => {
     return await axiosInstance.put(`/user/report/${id}`, formData, config);
 };
 
-export const getFullReport = async(projectName, projectType, round) =>await axiosInstance.get('/user/fullreport',{
-    params:{projectName, projectType, round}
+export const getFullReport = async(projectName, projectType, round, devices) =>await axiosInstance.get('/user/fullreport',{
+    params:{projectName, projectType, round, devices}
 })
 
 export const getVulListSpecific = async ({ projectName, projectType, round, devices, Name, ipAddress }) =>
   (await axiosInstance.get('/user/VulnerabilityListSpecific', {
     params: { projectName, projectType, round, devices, Name, ipAddress }
   })).data;
+
+  export const deleteReportBYId = async(id)=>await axiosInstance.put(`/user/reportDeleted/${id}`).then(response => response.data).catch(error => { throw error });
