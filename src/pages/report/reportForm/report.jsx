@@ -48,6 +48,7 @@ const ReportPage = () => {
   const [selectedProjectName, setSelectedProjectName] = useState(""); 
   const [selectedProjectNameAdd,setSelectedProjectNameAdd] = useState('')
   const [showPreview, setShowPreview] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const severityOptions = [
      {value:"Critical",label:"Critical"},
     { value: "High", label: "High" },
@@ -573,6 +574,24 @@ const handlePreviewClick = (url) => {
       return 'unknown';
     }
   };
+
+const handleDropOnIndex = (e, targetIndex) => {
+  e.preventDefault();
+  setIsDragging(false);
+
+  const files = e.dataTransfer.files;
+  if (files.length === 0) return;
+
+  const file = files[0];
+  if (file.type.startsWith("image/")) {
+    const url = URL.createObjectURL(file);
+    setProofOfConcepts((prev) => {
+      const updated = [...prev];
+      updated[targetIndex] = { ...updated[targetIndex], file, preview: url };
+      return updated;
+    });
+  }
+};
   
   return (
     <div className="report-page">
@@ -1102,7 +1121,7 @@ const handlePreviewClick = (url) => {
                     ) : (
                        <div
                         style={{
-                          width: "700%",
+                          width: "700px",
                           maxWidth: "400px",
                           height: "65px",
                           border: "2px dashed #ccc",
@@ -1116,7 +1135,30 @@ const handlePreviewClick = (url) => {
                           textAlign: "center",
                         }}
                       >
-                        <p className="m-0">Paste Image Here</p>
+                       <div
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => handleDropOnIndex(e, index)}
+                        onDragEnter={() => setIsDragging(true)}
+                        onDragLeave={() => setIsDragging(false)}
+                        style={{
+                          width: "700%",
+                          maxWidth: "700px",
+                          height: "65px",
+                          border: isDragging ? "2px dashed #007bff" : "2px dashed #ccc",
+                          borderRadius: "6px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "#888",
+                          backgroundColor: isDragging ? "#e6f7ff" : "#f8f9fa",
+                          fontStyle: "italic",
+                          textAlign: "center",
+                          transition: "all 0.2s ease-in-out",
+                        }}
+                      >
+                        <p className="m-0">Paste or Drag Image Here</p>
+                      </div>
+
                       </div>
                     )}
                     </div>
