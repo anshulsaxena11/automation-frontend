@@ -16,6 +16,8 @@ import PreviewModal from '../../../components/previewfile/preview';
 import { TiArrowBack } from "react-icons/ti";
 import { FaEdit } from "react-icons/fa";
 import { ToastContainer, toast } from 'react-toastify';
+import withReactContent from 'sweetalert2-react-content';
+import Swal from 'sweetalert2';
 import 'react-toastify/dist/ReactToastify.css';
 import './reportEdit.css'
 
@@ -52,6 +54,7 @@ const EditReportForm = () => {
     const [selectDevice, setSelectDevice] = useState([])
     const [vulnerabilityData, setVulnerabilityData] = useState([]);
     const [selectedDeviceVulnability, setSElectedDeviceVulnability] = useState();
+    const MySwal = withReactContent(Swal);
      
     const roundOptions = [
         { value: "", label: "Select Round", isDisabled: true },
@@ -551,20 +554,38 @@ const handleDeleteImage = (index) => {
 };
 
 const handleDelete = async (id) => {
+  const result = await MySwal.fire({
+    title: 'Are you sure?',
+    text: "This action cannot be undone.",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel',
+  });
+
+  if (!result.isConfirmed) return;
   try {
     const response = await deleteReportBYId(id);
     console.log(response)
 
     if (response.statusCode === 200) {
-      toast.success(response.message, {
-            className: 'custom-toast custom-toast-success',
-        });
-         navigate(`/report`);
+       MySwal.fire({
+        icon: 'success',
+        title: 'Deleted!',
+        text: response.message,
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    navigate(`/report`);
 
     } else {
-        toast.error(response.message, {
-            className: 'custom-toast custom-toast-error',
-        });
+       MySwal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: response.message,
+      });
     }
   } catch (error) {
      toast.error(error, {
