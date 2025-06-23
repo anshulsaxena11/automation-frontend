@@ -1,6 +1,6 @@
 // pages/ProjectListPage.js
 import React, { useState, useEffect } from 'react';
-import { getReportList } from '../../../api/reportApi/reportApi';
+import { getReportList ,deleteReportBYId} from '../../../api/reportApi/reportApi';
 import ListView from '../../../components/listView/listView';
 import {getAllRound} from '../../../api/roundApi/round'
 import { useNavigate } from 'react-router-dom';
@@ -8,6 +8,8 @@ import {getDeviceList} from '../../../api/deviceListAPI/decicelistApi'
 import { getProjectNameList } from '../../../api/ProjectDetailsAPI/projectDetailsApi'
 import {getProjectTypeList} from '../../../api/projectTypeListApi/projectTypeListApi'
 import dayjs from 'dayjs'
+import withReactContent from 'sweetalert2-react-content';
+import Swal from 'sweetalert2'
 
 const ReportList = () => {
   const [data, setData] = useState([]);
@@ -25,6 +27,7 @@ const ReportList = () => {
   const [selectedProjectName, setSelectedProjectName] = useState(null);
   const [selectedDevice, setSelectedDevice] = useState(null);
   const navigate = useNavigate();
+  const MySwal = withReactContent(Swal);
 
   // Define columns and a mapping for the column names
   const columns = [
@@ -205,6 +208,48 @@ const ReportList = () => {
     setSelectedProjectName(selected)
     setPage(1);
   }
+  const handleDelete = async (data) => {
+    const result = await MySwal.fire({
+      title: 'Are you sure?',
+      text: "This action cannot be undone.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel',
+    });
+  
+    if (!result.isConfirmed) return;
+    try {
+      const id =data._id
+      const response = await deleteReportBYId(id);
+  
+      if (response.statusCode === 200) {
+         MySwal.fire({
+          icon: 'success',
+          title: 'Deleted!',
+          text: response.message,
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      navigate(`/report`);
+  
+      } else {
+         MySwal.fire({
+          icon: 'error',
+          title: 'Error!',
+          text: response.message,
+        });
+      }
+    } catch (error) {
+      MySwal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: error?.message || 'Something went wrong!',
+    });
+    }
+  };
 
   return (
     <div>
@@ -242,6 +287,7 @@ const ReportList = () => {
         dirOptions={projectNameOptions}
         selecteddir={selectedProjectName}
         setSelecteddir={handleProjectName}
+        onDeleteClick={handleDelete}
       />
     </div>
   );
