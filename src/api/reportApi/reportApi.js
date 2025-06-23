@@ -36,8 +36,8 @@ export const updateReport = async (id, formData) => {
     return await axiosInstance.put(`/user/report/${id}`, formData, config);
 };
 
-export const getFullReport = async(projectName, projectType, round) =>await axiosInstance.get('/user/fullreport',{
-    params:{projectName, projectType, round}
+export const getFullReport = async(projectName, projectType, round, devices) =>await axiosInstance.get('/user/fullreport',{
+    params:{projectName, projectType, round, devices}
 })
 
 export const getVulListSpecific = async ({ projectName, projectType, round, devices, Name, ipAddress }) =>

@@ -5,6 +5,7 @@ import "react-tabs/style/react-tabs.css";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm, Controller } from "react-hook-form";
 import { getProjectNameList, getProjectTypeList } from '../../api/ProjectDetailsAPI/projectDetailsApi';
+import { getDeviceReportList } from '../../api/deviceListAPI/decicelistApi'
 import { getFullReport } from '../../api/reportApi/reportApi'
 import { getRoundList } from '../../api/roundApi/round'
 import { ToastContainer, toast } from 'react-toastify';
@@ -26,6 +27,9 @@ const ReportPdfGenerator = () => {
   const [isSectionBEnabled, setIsSectionBEnabled] = useState(false); 
   const [isSectionBEnabledTwo, setIsSectionBEnabledTwo] = useState(false); 
   const [isSectionBEnabledThree, setIsSectionBEnabledThree] = useState(false); 
+  const [deviceOption, setDeviceOption] = useState([])
+  const [selectedDevice, setSelectedDevice] = useState()
+  const [selectedDeviceReport, setSelectedDeviceReport] = useState()
   const [round, setRound] = useState([])
   const [selectedRound, setSelectedRound] = useState("")
   const [projectDetailsReport, setProjectDetailsReport] = useState([])
@@ -88,15 +92,49 @@ const ReportPdfGenerator = () => {
     fetchProjectTypes();
   }, [selectedProjectName]);
 
+  useEffect(() => {
+  const fetchDevice = async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      if (selectedProjectName && ProjectType) {
+        const projectName = selectedProjectName;
+        const projectType = ProjectType;
+
+        const data = await getDeviceReportList(projectName, projectType);
+        const response = data.data;
+
+        if (response && response.statusCode === 200 &&Array.isArray(response.data)) {
+          const options = response.data.map((device) => ({
+            value: device,
+            label: device,
+          }));
+          setDeviceOption(options)
+        } else {
+          throw new Error("Unexpected data format or empty device list");
+        }
+      }
+    } catch (err) {
+      setError(`Failed to fetch devices: ${err.message}`);
+      console.error("Error fetching devices:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchDevice();
+}, [selectedProjectName, ProjectType]);
+
   useEffect(()=>{
     const fetchRound = async () => {
       setLoading(true);
       setError(true);
       try{
-        if(selectedProjectName && ProjectType){
+        if((selectedProjectName && ProjectType)||(selectedDeviceReport && selectedProjectName && ProjectType)){
         const projectName = selectedProjectName;
         const projectType = ProjectType
-        const data = await getRoundList(projectName,projectType);
+        const devices = selectedDeviceReport
+        const data = await getRoundList(projectName,projectType,devices);
         const response = data.data.data;
       
         if (data.data && data.data.statusCode === 200 && Array.isArray(response)) {
@@ -112,17 +150,18 @@ const ReportPdfGenerator = () => {
 
     }
     fetchRound()
-  },[selectedProjectName,ProjectType])
+  },[selectedProjectName,ProjectType,selectedDeviceReport])
 
   useEffect(()=>{
     const fechFullReport = async ()  =>{
       setLoading(true);
       setError(true);
-      if(selectedProjectName && ProjectType && selectedRound){
+      if((selectedProjectName && ProjectType && selectedRound)|| (selectedProjectName && ProjectType && selectedRound && selectedDeviceReport)){
         const projectName = selectedProjectName;
         const projectType = ProjectType
         const round = selectedRound
-        const data = await getFullReport(projectName,projectType,round)
+        const devices = selectedDeviceReport
+        const data = await getFullReport(projectName,projectType,round,devices)
         console.log(data.data.response);
         // console.log(data.data.data)
         if(data.data && data.data.statusCode === 200){
@@ -133,7 +172,7 @@ const ReportPdfGenerator = () => {
       }
     }
     fechFullReport();
-  },[selectedProjectName,ProjectType,selectedRound])
+  },[selectedProjectName,ProjectType,selectedRound,selectedDeviceReport])
 
   const handleNext = () => {
     if (!selectedProjectName || !ProjectType || !round) {
@@ -163,6 +202,12 @@ const ReportPdfGenerator = () => {
     setIsSectionBEnabledThree(true);
     setValue(3);
   };
+  const handleDeviceChange = (selected)=>{
+    setSelectedDevice(selected)
+    setSelectedRound(null)
+    const selectedDevice = selected?.label
+    setSelectedDeviceReport(selectedDevice)
+  }
 
   return (
     
@@ -181,8 +226,8 @@ const ReportPdfGenerator = () => {
     >
     <Tab label="Section A" className="tab-text" />
     <Tab label="Section B" className="tab-text" />
-    <Tab label="Section C" className="tab-text" />
-    <Tab label="Section D" className="tab-text" />
+    {/* <Tab label="Section C" className="tab-text" />
+    <Tab label="Section D" className="tab-text" /> */}
     </Tabs>
 
       {/* Tab Panels */}
@@ -194,7 +239,7 @@ const ReportPdfGenerator = () => {
               <div className='row'>
                 <Form>
                   <div className='row'>
-                    <div className='col-sm-4 col-md-4 col-lg-4'>
+                    <div className='col-sm-3 col-md-3 col-lg-3'>
                       <Form.Group>
                         <Form.Label className='fs-5 fw-bolder'>Project Name<span className="text-danger">*</span></Form.Label>
                         <Controller
@@ -227,7 +272,7 @@ const ReportPdfGenerator = () => {
                         />
                       </Form.Group>
                     </div>
-                    <div className='col-sm-4 col-md-4 col-lg-4'>
+                    <div className='col-sm-3 col-md-3 col-lg-3'>
                       <Form.Group className="mb-3">
                         <Form.Label className="fs-5 fw-bolder">Project Type<span className="text-danger">*</span></Form.Label>
                         <Controller
@@ -250,13 +295,31 @@ const ReportPdfGenerator = () => {
                                 field.onChange(selection);
                                 setProjectType(selection);
                                 setFormValue("ProjectType", selectedOption.label);
+                                if (selection !== "Network Devices") {
+                                  setSelectedDevice(null); 
+                                }
                               }}
                             />
                           )}
                         />
                       </Form.Group>
                     </div>
-                    <div className='col-sm-4 col-md-4 col-lg-4'>
+                    {ProjectType === "Network Devices" && (
+                    <div className='col-sm-3 col-md-3 col-lg-3'>
+                      <Form.Group>
+                        <Form.Label className="fs-5 fw-bolder">Devices<span className="text-danger">*</span></Form.Label>
+                        <Select
+                          options={deviceOption}
+                          value={selectedDevice}
+                          onChange={handleDeviceChange}
+                          isLoading={loading}
+                          placeholder="Select Devices"
+                        />
+
+                      </Form.Group>
+                    </div>
+                    )}
+                    <div className='col-sm-3 col-md-3 col-lg-3'>
                       <Form.Group>
                         <Form.Label className="fs-5 fw-bolder">Round<span className="text-danger">*</span></Form.Label>
                         <Controller
@@ -298,7 +361,7 @@ const ReportPdfGenerator = () => {
             </div>
           </Typography>
         )}
-        {value === 1 && (
+        {/* {value === 1 && (
           <Typography>
             <h4>Section B Content</h4>
              <div className="d-flex justify-content-end mt-3">
@@ -307,8 +370,8 @@ const ReportPdfGenerator = () => {
                 </Button>
               </div>
           </Typography>
-        )}
-        {value === 2 && projectDetailsReport && fullReport && Object.keys(projectDetailsReport).length > 0 && (
+        )} */}
+        {value === 1 && projectDetailsReport && fullReport && Object.keys(projectDetailsReport).length > 0 && (
           <Typography>
             <div className='container my-3' >
               <div className='row'>
@@ -501,14 +564,14 @@ const ReportPdfGenerator = () => {
             
           </Typography>
         )}
-         {value === 3 && (
+         {/* {value === 3 && (
           <Typography>
             <h4>Section D Content</h4>
-            {/* <WordDocumentGenerator 
+            <WordDocumentGenerator 
               projectDetails={projectDetailsReport} 
-            /> */}
+            />
           </Typography>
-        )}
+        )} */}
       </Box>
     </Box>
   );

@@ -1,8 +1,8 @@
 import axiosInstance from '../axiosconfig'
 
-export const getRoundList = async (projectName, projectType) => {
+export const getRoundList = async (projectName, projectType, devices) => {
     return axiosInstance.get(`/user/round`, {
-        params: { projectName, projectType },
+        params: { projectName, projectType, devices },
     });
 };
 
