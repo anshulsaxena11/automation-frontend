@@ -3,7 +3,6 @@ import { Table, Pagination, InputGroup, FormControl, Button, Spinner } from 'rea
 import { FaPlus, FaCheck, FaEye } from "react-icons/fa";
 import { IoEyeSharp, IoClose } from "react-icons/io5";
 import { CiEdit,CiViewList } from "react-icons/ci";
-import { MdDeleteOutline } from 'react-icons/md';
 import { RiMindMap } from "react-icons/ri";
 import { GiPowerButton } from "react-icons/gi";
 import Select from 'react-select';
@@ -24,7 +23,6 @@ const ListView = ({
   buttonName,
   onViewClick,
   onEditClick,
-  onDeleteClick,
   showStatusIcon =false,
   onCheckClick,
   onCrossClick,
@@ -294,9 +292,7 @@ const ListView = ({
                   {showEditView && (
                     <>
                       <IoEyeSharp style={{ cursor: 'pointer' }} onClick={() => onViewClick(item)} /> ||{' '}
-                      <CiEdit style={{ cursor: 'pointer' }} onClick={() => onEditClick(item)} />||{' '}
-                      <MdDeleteOutline style={{ cursor: 'pointer', color: 'red' }} onClick={() => onDeleteClick(item)}
-    />
+                      <CiEdit style={{ cursor: 'pointer' }} onClick={() => onEditClick(item)} />
                     </>
                   )}
                 </td>

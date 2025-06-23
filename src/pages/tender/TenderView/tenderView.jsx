@@ -119,7 +119,7 @@ const TenderTrackingView = ({ ID }) => {
               <Form.Control type="text" {...register("lastDate")} readOnly disabled />
             </Form.Group>
              <Form.Group className="mb-3 pt-4" >
-                <Form.Label className="fs-5 fw-bolder">Tender Document Upload (PDF, DOC, Image)<span className="text-danger">*</span></Form.Label>
+                <Form.Label className="fs-5 fw-bolder">Document Upload (PDF, DOC, Image)<span className="text-danger">*</span></Form.Label>
                 {fileUrl && (
                 <div className="mt-2" style={{ cursor: "pointer" }}>
                     <h6 onClick={() => handlePreviewClick(filePreviewUrl)}>
