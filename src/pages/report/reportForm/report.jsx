@@ -523,7 +523,6 @@ const handleFileChange = (index, event) => {
       if (item.type.indexOf("image") !== -1) {
         const blob = item.getAsFile();
         const url = URL.createObjectURL(blob);
-
         // Add pasted image to the last step (or first empty)
         setProofOfConcepts((prev) => {
           const updated = [...prev];
@@ -643,14 +642,7 @@ const handlePreviewClick = (url) => {
                   <td>{item.description || "N/A"}</td>
                   <td>
                     {item.proof ? (
-                      <a
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handlePreviewClick(item.proof);
-                        }}
-                        className="btn btn-link"
-                      >
+                      <a href="#" onClick={(e) => {e.preventDefault();handlePreviewClick(item.proof);}}className="btn btn-link">
                         {getFileTypeFromUrl(item.proof).startsWith("image/") ? (
                           <PiImagesSquareBold style={{ marginRight: "8px" }} />
                         ) : (
