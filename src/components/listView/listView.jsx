@@ -6,6 +6,7 @@ import { CiEdit,CiViewList } from "react-icons/ci";
 import { RiMindMap } from "react-icons/ri";
 import { GiPowerButton } from "react-icons/gi";
 import Select from 'react-select';
+import { MdDeleteOutline } from 'react-icons/md';
 
 const ListView = ({ 
   columns, 
@@ -23,6 +24,7 @@ const ListView = ({
   buttonName,
   onViewClick,
   onEditClick,
+  onDeleteClick,
   showStatusIcon =false,
   onCheckClick,
   onCrossClick,
@@ -292,7 +294,9 @@ const ListView = ({
                   {showEditView && (
                     <>
                       <IoEyeSharp style={{ cursor: 'pointer' }} onClick={() => onViewClick(item)} /> ||{' '}
-                      <CiEdit style={{ cursor: 'pointer' }} onClick={() => onEditClick(item)} />
+                      <CiEdit style={{ cursor: 'pointer' }} onClick={() => onEditClick(item)} /> ||{' '}
+                      <MdDeleteOutline style={{ cursor: 'pointer', color: 'red' }} onClick={() => onDeleteClick(item)}
+    />
                     </>
                   )}
                 </td>

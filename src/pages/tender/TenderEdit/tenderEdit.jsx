@@ -188,6 +188,10 @@ const TenderTrackingEdit =({ID}) =>{
                 formDataToSubmit.append("tenderDocument", file, file.name);
             } 
 
+            if(status==='Bidding'){
+                console.log('ok');
+            }
+
            const response = await updateTenderById(trackingId,formDataToSubmit)
            if (response.data.statusCode === 200){
             setOneTimeFull(true)
@@ -319,7 +323,7 @@ const TenderTrackingEdit =({ID}) =>{
                             />
                         </Form.Group>
                         <Form.Group className="pt-4">
-                            <Form.Label className="fs-5 fw-bolder">Document Upload (PDF, DOC, Image)<span className="text-danger">*</span></Form.Label>
+                            <Form.Label className="fs-5 fw-bolder">Tender Document Upload (PDF, DOC, Image)<span className="text-danger">*</span></Form.Label>
                             <Form.Control 
                             type="file" 
                             accept=".jpg,.png,.pdf" 
