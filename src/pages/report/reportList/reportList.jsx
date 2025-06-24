@@ -233,7 +233,7 @@ const ReportList = () => {
           timer: 1500,
           showConfirmButton: false,
         });
-      navigate(`/report`);
+        fetchData()
   
       } else {
          MySwal.fire({
