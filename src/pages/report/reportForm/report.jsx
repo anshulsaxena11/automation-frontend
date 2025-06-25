@@ -370,7 +370,7 @@ const handleFileChange = (index, event) => {
       setValue("Recomendation", "");
       setValue("severity", null);
       // setValue("selectedProjectName", null)
-      setValue("Path","")
+      // setValue("Path","")
       // setValue("round",null)
       setRoundOptions(null)
       setSelectedVulnerability(null);
