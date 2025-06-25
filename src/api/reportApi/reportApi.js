@@ -25,6 +25,8 @@ export const postReport = async (payload) => {
 };
 
 export const getReportList = async ({ page = 1, limit = 10, search = "", round="", devices="",projectType="",projectName="" }) => axiosInstance.get("/user/report", { params: { page, limit, search, round, devices, projectType, projectName } }).then(response => response.data);
+export const getAllReportList = async () => axiosInstance.get("/user/allreport").then(response => response.data);
+
 export const getReportById = async (id) => await axiosInstance.get(`/user/report/${id}`).then(response => response.data).catch(error => { throw error });
 export const updateReport = async (id, formData) => {
     const config = {
