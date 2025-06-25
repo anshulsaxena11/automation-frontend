@@ -9,9 +9,11 @@ import PreviewModal from '../../../components/previewfile/preview';
 import Select from "react-select";
 import { TiArrowBack } from "react-icons/ti";
 import { PiImagesSquareBold } from "react-icons/pi";
-import {getTrackingById,updateTenderById} from '../../../api/TenderTrackingAPI/tenderTrackingApi'
+import {getTrackingById,updateTenderById,updatetendermessage} from '../../../api/TenderTrackingAPI/tenderTrackingApi'
 import { getStateList } from '../../../api/stateApi/stateApi';
 import { getEmpList } from '../../../api/TenderTrackingAPI/tenderTrackingApi';
+import withReactContent from 'sweetalert2-react-content';
+import Swal from 'sweetalert2'
 
 const TenderTrackingEdit =({ID}) =>{
     const { register, handleSubmit, setValue, reset, getValues } = useForm();
@@ -30,6 +32,7 @@ const TenderTrackingEdit =({ID}) =>{
     const [oneTimeTaskForce,setOneTimeTaskForce]=useState(true)
     const [oneTimeFull,setOneTimeFull]=useState(true)
     const [showModal, setShowModal] = useState(false);
+    const MySwal = withReactContent(Swal);
     const StatusOption =[
         {value:"Upload",label:"Upload"},
         {value:"Bidding",label:"Bidding"},
@@ -175,6 +178,8 @@ const TenderTrackingEdit =({ID}) =>{
             const valueINR = formData.valueINR || getValues("valueINR")
             const status = formData.status || getValues("status")
             const lastDate = formData.lastDate || getValues("lastDate")
+            const tenderid = getValues("_id")
+            const statusmssg = getValues("messageStatus")
 
             formDataToSubmit.append("tenderName",tenderName)
             formDataToSubmit.append("organizationName",organizationName)
@@ -188,9 +193,61 @@ const TenderTrackingEdit =({ID}) =>{
                 formDataToSubmit.append("tenderDocument", file, file.name);
             } 
 
-            if(status==='Bidding'){
-                console.log('ok');
-            }
+                if (status === 'Bidding' && statusmssg !== 'Lost') {
+                    const result = await MySwal.fire({
+                    title: 'Are you sure?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Lost',
+                    cancelButtonText: 'Want'
+                });
+
+                if (!result.isConfirmed) {
+                    return;
+                }
+
+                const messageResult = await Swal.fire({
+                    title: "Submit your Message",
+                    input: "text",
+                    inputAttributes: {
+                    autocapitalize: "off"
+                    },
+                    showCancelButton: true,
+                    confirmButtonText: "Submit",
+                    showLoaderOnConfirm: true,
+                    preConfirm: async (message) => {
+                    try {
+                        console.log('Submitting message...');
+                        const response = await updatetendermessage(tenderid, message); // Axios call
+                        console.log('Response:', response);
+
+                        if (response.status !== 200 && response.status !== 201) {
+                        return Swal.showValidationMessage(`Error: ${response.statusText}`);
+                        }
+
+                        return response.data; // Send parsed data to .then(result.value)
+                    } catch (error) {
+                        return Swal.showValidationMessage(
+                        `Request failed: ${error?.response?.data?.message || error.message}`
+                        );
+                    }
+                    },
+                    allowOutsideClick: () => !Swal.isLoading()
+                });
+
+                if (messageResult.isConfirmed) {
+                    Swal.fire({
+                    title: 'Message submitted successfully!',
+                    text: messageResult.value?.message || 'Your message was recorded.',
+                    icon: 'success'
+                    });
+                    return;
+                }
+                }
+
+
 
            const response = await updateTenderById(trackingId,formDataToSubmit)
            if (response.data.statusCode === 200){

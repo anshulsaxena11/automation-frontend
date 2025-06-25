@@ -121,3 +121,16 @@ export const getTrackingById = async(id) => axiosInstance.get(`/user/tenderTrack
         }
     });
 };
+export const updatetendermessage = async (id, message, messageStatus = 'Lost') => {
+  return await axiosInstance.put(
+    `/user/tenderTracking/${id}`,
+    { message, messageStatus }, // ✅ send both fields in body
+    {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }
+  );
+};
+
+
